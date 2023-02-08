@@ -1,11 +1,10 @@
 #pragma once
 
 #include <RadioLib.h>
-#include "debug.h"
+#include "./debug.h"
 
 #define RADIOHW SX1278
 #define RTTY_IDLE_TIME 10
-#define SSDO_VERSION 0
 
 // Struct to hold LoRA settings
 typedef struct {
@@ -26,7 +25,7 @@ typedef struct {
   float BitRate; 
   float FreqDev;
   float RXBandwidth;
-  int8_t  Power;                  // in dbM range 2 - 17
+  int8_t  Power;             // in dbM range 2 - 17
   uint16_t PreambleLength;
   bool  EnableOOK;
   float dataShaping;
@@ -43,8 +42,8 @@ typedef struct {
 
 typedef struct {
   float Frequency;    // Base frequency
-  float Correction;
-  SSTVMode_t Mode;
+  float Correction;   // correction to slow down or speed up clock
+  SSTVMode_t Mode;    // SSTV mode
 } SSTVSettings_t;
 
 class RadioControl {
@@ -94,10 +93,21 @@ class RadioControl {
 
         /**
          * send LORA message
-         * @param message TxLine to send
+         * @param message data to send
+         * @param size size of data in bytes
          */
         bool sendLora(uint8_t* message, unsigned size);
 
+        /**
+         * send LORA string message
+         * @param message string to send
+         */
+        //bool sendLora(String message);
+
+        /**
+         * send SSTV image
+         * @param image pointer to image in RGB565 
+         */
         bool sendSSTV(uint16_t *image);
 
     private:

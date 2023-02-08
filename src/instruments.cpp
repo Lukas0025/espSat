@@ -1,4 +1,4 @@
-#include "instruments.h"
+#include "../include/instruments.h"
 
 namespace instruments {
     unsigned tc;

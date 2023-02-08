@@ -1,6 +1,6 @@
 #pragma once
 
-#include "radio.h"
+#include "./radio.h"
 
 #define NSS_PIN 1
 #define DIO0_PIN 2

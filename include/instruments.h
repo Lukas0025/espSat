@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "telemetry.h"
-#include "config.h"
+#include "./telemetry.h"
+#include "./config.h"
 
 namespace instruments {
 

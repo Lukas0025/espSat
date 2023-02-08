@@ -1,4 +1,4 @@
-#include "radio.h"
+#include "../include/radio.h"
 
 #define MASK(LEN) ((1<<LEN)-1)
 #define GET_BITS(VAR, POS, NUM) ((VAR>>POS) & MASK(NUM))
