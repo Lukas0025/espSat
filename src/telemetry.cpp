@@ -1,4 +1,4 @@
-#include "../include/telemetry.h"
+#include "telemetry.h"
 
 String Telemetry::getState() {
   String message = this->beginString + " " + this->craftName + " :: ";
