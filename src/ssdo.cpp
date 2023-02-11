@@ -59,5 +59,5 @@ uint8_t SSDO::hamming(uint8_t bits) {
 	uint8_t p0 = this->parity((bits & 0b11) | ((bits >> 1) & 0b100));
 	uint8_t p7 = this->parity( bits & 0xF );
 
-	uint8_t res = p0 | (p1 << 1) | ((bits & 0b1) << 2) | (p3 << 3) | ((bits & 0b1110) << 3) | (p7 << 7);
+	return p0 | (p1 << 1) | ((bits & 0b1) << 2) | (p3 << 3) | ((bits & 0b1110) << 3) | (p7 << 7);
 }

@@ -57,12 +57,12 @@ namespace instruments {
      * Add standart instruments to telemetry
      */
     void autoAddToTelemetry(Telemetry *telemetry) {
-        telemetry->addInstrument("uptime", uptime);
-        telemetry->addInstrument("voltage", voltage);
-        telemetry->addInstrument("temperature", temperature);
-        telemetry->addInstrument("altitude", altitude);
-        telemetry->addInstrument("pressure", pressure);
-  telemetry->addInstrument("lora-counter", loraCounterStr);
-  telemetry->addInstrument("transmit-counter", transmitConterStr);
+      telemetry->addInstrument("uptime", uptime);
+      telemetry->addInstrument("voltage", voltage);
+      telemetry->addInstrument("temperature", temperature);
+      telemetry->addInstrument("altitude", altitude);
+      telemetry->addInstrument("pressure", pressure);
+      telemetry->addInstrument("lora-counter", loraCounterStr);
+      telemetry->addInstrument("transmit-counter", transmitConterStr);
     }
 }

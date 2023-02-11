@@ -2,10 +2,10 @@
 
 bool RadioControl::setupRTTY(RTTYSettings_t RTTYSettings, RTTYClient *rtty) {
   
-  printDebug("Stuping RTTY");
+  DEBUG_PRINT("Stuping RTTY");
 
   if (!this->fskReady) {
-    printDebug("ERROR fsk not setuped");
+    ERROR_PRINT("fsk not setuped");
     return false;
   }
 
@@ -20,11 +20,11 @@ bool RadioControl::setupRTTY(RTTYSettings_t RTTYSettings, RTTYClient *rtty) {
   );
                      
   if(state != RADIOLIB_ERR_NONE) {
-    printDebug2("Fail to setup RTTY. Error code: ", state);
+    ERROR_PRINT("Fail to setup RTTY. Error code: ", state);
     return false;
   }
 
-  printDebug("RTTY setuped");
+  DEBUG_PRINT("RTTY setuped");
   
   this->rttyReady = true;
   return true;
@@ -32,7 +32,7 @@ bool RadioControl::setupRTTY(RTTYSettings_t RTTYSettings, RTTYClient *rtty) {
 
 bool RadioControl::setupFSK(FSKSettings_t FSKSettings) {
 
-  printDebug("Setuping FSK");
+  DEBUG_PRINT("Setuping FSK");
  
   int16_t state = this->radio->beginFSK(
     FSKSettings.Frequency,
@@ -46,37 +46,32 @@ bool RadioControl::setupFSK(FSKSettings_t FSKSettings) {
 
 
   if(state != RADIOLIB_ERR_NONE) {
-    printDebug2("Fail to setup FSK. Error code: ", state);
+    ERROR_PRINT("Fail to setup FSK. Error code: ", state);
     return false;
   }
 
   this->fskReady  = true;
   this->loraReady = false;
-  printDebug("FSK setuped");
+  DEBUG_PRINT("FSK setuped");
   
   return true;
 }
 
 bool RadioControl::setupSSTV(SSTVSettings_t ssvtsettings, SSTVClient *sstv) {
+
+  DEBUG_PRINT("Setuping SSTV");
   
   int state = sstv->begin(ssvtsettings.Frequency, ssvtsettings.Mode);
+
   if(state != RADIOLIB_ERR_NONE) {
-    printDebug2("Fail to setup SSTV. Error code: ", state);
+    ERROR_PRINT("Fail to setup SSTV. Error code: ", state);
     return false;
   }
 
-  // set correction factor
-  // NOTE: Due to different speeds of various platforms
-  //       supported by RadioLib (Arduino Uno, ESP32 etc),
-  //       and because SSTV is analog protocol, incorrect
-  //       timing of pulses can lead to distortions.
-  //       To compensate, correction factor can be used
-  //       to adjust the length of timing pulses
-  //       (lower number = shorter pulses).
-  //       The value is usually around 0.95 (95%).
   state = sstv->setCorrection(ssvtsettings.Correction);
+  
   if(state != RADIOLIB_ERR_NONE) {
-    printDebug2("Fail to set SSTV Correction. Error code: ", state);
+    ERROR_PRINT("Fail to set SSTV Correction. Error code: ", state);
     return false;
   }
 
@@ -87,14 +82,14 @@ bool RadioControl::setupSSTV(SSTVSettings_t ssvtsettings, SSTVClient *sstv) {
 
   this->sstv = sstv;
 
-  printDebug("SSTV stuped");
+  DEBUG_PRINT("SSTV stuped");
 
   return true;
 }
 
 bool RadioControl::setupLora(LoraSettings_t LoRaSettings) {
   
-  printDebug("Setuping LORA");
+  DEBUG_PRINT("Setuping LORA");
 
   int16_t state = this->radio->begin(
     LoRaSettings.Frequency,
@@ -110,7 +105,7 @@ bool RadioControl::setupLora(LoraSettings_t LoRaSettings) {
   this->radio->setCRC(true);
   
   if(state != RADIOLIB_ERR_NONE) {
-    printDebug2("Fail to setup LORA. Error code: ", state);
+    ERROR_PRINT("Fail to setup LORA. Error code: ", state);
     return false;
   }
 
@@ -118,7 +113,7 @@ bool RadioControl::setupLora(LoraSettings_t LoRaSettings) {
   this->fskReady   = false;
   this->rttyReady  = false;
   this->sstvReady  = false;
-  printDebug("LORA setuped");
+  DEBUG_PRINT("LORA setuped");
   
   return true;
 }
@@ -126,29 +121,34 @@ bool RadioControl::setupLora(LoraSettings_t LoRaSettings) {
 bool RadioControl::sendRTTY(String message) {
 
   if (!this->rttyReady) {
-    printDebug("ERROR rtty not setuped");
+    ERROR_PRINT("rtty not setuped");
     return false;
   }
   
-  printDebug("rtty IDLE");
+  DEBUG_PRINT("rtty IDLE");
   this->rtty->idle();     
 
   delay(RTTY_IDLE_TIME); 
 
-  printDebug2("rtty sending ", message); 
+  DEBUG_PRINT("rtty sending ", message); 
   this->rtty->println(message);
-  this->rtty->standby();
+  
+  // turn off transmitter
+  this->radio->standby(); 
 
   return true;
 }
 
 bool RadioControl::sendLora(uint8_t* message, unsigned size) {
   if (!this->loraReady) {
-    printDebug("ERROR lora not setuped");
+    ERROR_PRINT("ERROR lora not setuped");
     return false;
   }
   
   this->radio->transmit(message, size);
+
+  // turn off transmitter
+  //this->radio->standby(); 
   
   return true;
 }
@@ -156,17 +156,17 @@ bool RadioControl::sendLora(uint8_t* message, unsigned size) {
 bool RadioControl::sendSSTV(uint16_t *image) {
 
   if (!this->sstvReady) {
-    printDebug("ERROR sstv not setuped");
+    ERROR_PRINT("ERROR sstv not setuped");
     return false;
   }
 
+  DEBUG_PRINT("sstv send sync tone");
   this->sstv->idle();
   delay(10000);
   
-  printDebug("sstv set headers");
+  DEBUG_PRINT("sstv set headers");
   this->sstv->sendHeader();  
 
-  printDebug("sstv sending"); 
   for(uint8_t i = 0; i < 240; i++) {
     uint32_t line[320];
 
@@ -183,6 +183,7 @@ bool RadioControl::sendSSTV(uint16_t *image) {
       line[j] = (r << 16) | (g << 8) | b;
     }
     
+    DEBUG_PRINT("sstv sending line ", i); 
     this->sstv->sendLine(line);
   }
 

@@ -1,54 +1,46 @@
-#include "stateDrive.h";
+#include "stateDrive.h"
+#include <EEPROM.h>
+
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  10       /* Time ESP32 will go to sleep (in seconds) */
 
 namespace StateDrive {
-  RADIOHW      *radio;
-  RadioControl *radioControl;
-  Telemetry    *telemetry;
-  state_t (*currentState)() = initState;
-  
-  RTTYClient *rtty;
-  SSTVClient *sstv;
+	RADIOHW      *radio;
+	RadioControl *radioControl;
+	Telemetry    *telemetry;
+	state_t (*currentState)() = initState;
+	
+	RTTYClient *rtty;
+	SSTVClient *sstv;
 
 	void run() {
 		currentState();		
 	}
-
-  void setup(RADIOHW* radioSX) { 
-    printDebug("Setuping");
-    
-    radio        = radioSX;
-    radioControl = new RadioControl(radio);
-    telemetry    = new Telemetry("ESPCAMSAT-0001", "?B?B?B?B ", " ?E?E?E?E");
-    sstv         = new SSTVClient(radio);
-    rtty         = new RTTYClient(radio);
-
-    /*wakeup_reason = esp_sleep_get_wakeup_cause();
-
-    if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
-      currentState = idleState; 
-    }*/
-    
-    instruments::setup();
-    instruments::autoAddToTelemetry(telemetry);
-
-    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    
-    printDebug("Setuping done");
-  }
+	
+	void setup(RADIOHW* radioSX) {     
+		radio        = radioSX;
+		radioControl = new RadioControl(radio);
+		telemetry    = new Telemetry("ESPCAMSAT-0001", "?B?B?B?B ", " ?E?E?E?E");
+		sstv         = new SSTVClient(radio);
+		rtty         = new RTTYClient(radio);
+		
+		instruments::setup();
+		instruments::autoAddToTelemetry(telemetry);
+	}
 
 	state_t initState() {
-    printDebug("current state is init");
+		DEBUG_PRINT("Sattelite is in init state. Current ALT is ", instruments::getAlt(), " and INIT ALT is ", INIT_ALT);
+
 		if (instruments::getAlt() >= INIT_ALT) NEXT_HARD_STATE(idleState); 
 		
 		NEXT_SOFT_STATE(initState);
 	}
 
 	state_t idleState() {
-    printDebug("I here");
 		uint16_t transmitCounter = instruments::getTransmitCounter();
+
+		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
@@ -62,7 +54,6 @@ namespace StateDrive {
 	}
 
 	state_t rttyState() {
-    printDebug("I here");
 		//powerControl.powerOnBMP280();
 		//powerControl.powerOnVoltmeter();
 		//instruments::setupTelemetryInstruments();
@@ -85,7 +76,6 @@ namespace StateDrive {
 	}
 
 	state_t sstvState() {
-    printDebug("I here");
 		//powerControl.powerOnRadio();
 		radioControl->setupFSK(config::radio::fsk);
 		radioControl->setupSSTV(config::radio::sstv, sstv);
@@ -97,7 +87,6 @@ namespace StateDrive {
 	}
 
 	state_t loraFastSSDOState() {
-    printDebug("I here");
 		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
 
 		//powerControl.powerOnRadio();
@@ -116,7 +105,6 @@ namespace StateDrive {
 	}
 
 	state_t loraSlowSSDOState() {
-    printDebug("I here");
 		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
 
 		//powerControl.powerOnRadio();
@@ -134,7 +122,6 @@ namespace StateDrive {
 	}
 
 	state_t loraTelemetryState() {
-     printDebug("I here");
 		//powerControl.powerOnBMP280();
 		//powerControl.powerOnVoltmeter();
 		//instruments::setupTelemetryInstruments();
@@ -163,7 +150,7 @@ namespace StateDrive {
 	}
 
 	state_t sleepState() {
-    esp_deep_sleep_start();
+		delay(10000);
 		NEXT_SOFT_STATE(idleState);
 	}
 	
