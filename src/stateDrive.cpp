@@ -25,11 +25,11 @@ namespace StateDrive {
     sstv         = new SSTVClient(radio);
     rtty         = new RTTYClient(radio);
 
-    wakeup_reason = esp_sleep_get_wakeup_cause();
+    /*wakeup_reason = esp_sleep_get_wakeup_cause();
 
     if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
       currentState = idleState; 
-    }
+    }*/
     
     instruments::setup();
     instruments::autoAddToTelemetry(telemetry);
