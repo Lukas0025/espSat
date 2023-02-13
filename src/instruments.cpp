@@ -1,68 +1,102 @@
+/**
+ * espSat project simple esp base satellite
+ * File with implementation of sensor manager
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
+
 #include "instruments.h"
+#include "persistMem.h"
 
 namespace instruments {
-    unsigned tc;
-    unsigned lc;
-    
-    /**
-     * Setup all instruments
-     */
+
     void setup() {
-      tc = 0;
-      lc = 0;
+      PersistMem::init();
     }
 
-    unsigned getAlt() { return 1000; }
-
-    unsigned getTransmitCounter() { return tc; }
-
-    void incTransmitCounter() {tc++;}
-
-    unsigned incGetLoraCounter() {return lc++;}
-
-    
-
-    /**
-     * Return UPTIME of satellite in seconds
-     * @return String
+    /*
+     * Functions for work with satellite sensors
      */
-    String uptime() { return String(millis() / 1000); }
 
-    /**
-     * Return voltage of sattelite systems
-     * @return string
+    unsigned getUptime() {
+      return millis();
+    }
+
+    float getAlt() {
+      return 1000;
+    }
+
+    float getPressure() {
+      return 1100;
+    }
+
+    float getVoltage() {
+      return 3.3;
+    }
+
+    float getTemperature() {
+      return 10.01;
+    }
+
+    /*
+     * Functions for work with satellite counters
      */
-    String voltage() { return String("3.3V"); }
 
-    /**
-     * Return outer teperature
-     * @return String
-    */
-    String temperature() { return "10.01C"; }
-    
-    /**
-     * Return altudite
+    uint32_t getTransmitCounter() {
+      return PersistMem::getTransmitCounter();
+    }
+
+    uint32_t getLoraCounter() {
+      return PersistMem::getTransmitCounter();
+    }
+
+    uint16_t getBootCounter() {
+      return PersistMem::getBootCounter();
+    }
+
+    uint32_t incGetTransmitCounter() {
+      auto tc = PersistMem::getTransmitCounter(); 
+      PersistMem::setTransmitCounter(++tc);
+
+      return tc;
+    }
+
+    uint32_t incGetLoraCounter() {
+      auto lc = PersistMem::getLoraCounter(); 
+      PersistMem::setLoraCounter(++lc);
+
+      return lc;
+    }
+
+    uint16_t incGetBootCounter() {
+      auto bc = PersistMem::getBootCounter(); 
+      PersistMem::setLoraCounter(++bc);
+
+      return bc;
+    }
+
+    /*
+     * This is telemetry support functions return state of senzor in String
      */
-    String altitude() { return String(getAlt()) + "M"; }
-    
-    /**
-     * Return presure
-     */
-    String pressure()  { return "1000hpa"; }
+    String uptimeStr()           { return String(getUptime() / 1000) + "S"; }
+    String voltageStr()          { return String(getVoltage()) + "V"; }
+    String temperatureStr()      { return String(getTemperature()) + "C"; }
+    String altitudeStr()         { return String(getAlt()) + "M"; }
+    String pressureStr()         { return String(getPressure()) + "hpa"; }
+    String loraCounterStr()      { return String(getLoraCounter()); }
+    String transmitCounterStr()  { return String(getTransmitCounter()); }
+    String bootCounterStr()      { return String(getBootCounter()); }
 
-    String loraCounterStr()     { return String(lc); }
-    String transmitConterStr()  { return String(tc); }
-
-    /**
+    /*
      * Add standart instruments to telemetry
      */
     void autoAddToTelemetry(Telemetry *telemetry) {
-      telemetry->addInstrument("uptime", uptime);
-      telemetry->addInstrument("voltage", voltage);
-      telemetry->addInstrument("temperature", temperature);
-      telemetry->addInstrument("altitude", altitude);
-      telemetry->addInstrument("pressure", pressure);
-      telemetry->addInstrument("lora-counter", loraCounterStr);
-      telemetry->addInstrument("transmit-counter", transmitConterStr);
+      telemetry->addInstrument("uptime",      uptimeStr);
+      telemetry->addInstrument("voltage",     voltageStr);
+      telemetry->addInstrument("temperature", temperatureStr);
+      telemetry->addInstrument("altitude",    altitudeStr);
+      telemetry->addInstrument("pressure",    pressureStr);
+      telemetry->addInstrument("lcounter",    loraCounterStr);
+      telemetry->addInstrument("tcounter",    transmitCounterStr);
+      telemetry->addInstrument("bcounter",    bootCounterStr);
     }
 }

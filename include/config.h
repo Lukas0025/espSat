@@ -1,3 +1,8 @@
+/**
+ * espSat project simple esp base satellite
+ * File with satellite confogurations
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
 #pragma once
 
 #include "./radio.h"

@@ -1,3 +1,8 @@
+/**
+ * espSat project simple esp base satellite
+ * File with test data (if no sensors)
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
 #pragma once
 
 namespace TestData {

@@ -1,3 +1,9 @@
+/**
+ * espSat project simple esp base satellite
+ * File with implementation of telemetry manager
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
+
 #include "telemetry.h"
 
 String Telemetry::getState() {

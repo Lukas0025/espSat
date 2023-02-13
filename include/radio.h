@@ -1,3 +1,9 @@
+/**
+ * espSat project simple esp base satellite
+ * File with header of radio manager
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
+
 #pragma once
 
 #include <RadioLib.h>
@@ -76,6 +82,12 @@ class RadioControl {
         */
         bool setupFSK(FSKSettings_t FSKSettings);
 
+        /**
+         * Setup SSTV protocol
+         * @param SSTVSetting sstv settings
+         * @param sstv sstv client to set
+         * @retun bool
+         */
         bool setupSSTV(SSTVSettings_t SSTVSettings, SSTVClient *sstv);
 
         /**
@@ -88,6 +100,7 @@ class RadioControl {
         /**
          * send RTTY telemetry message
          * @param message TxLine to send
+         * @return bool
          */
         bool sendRTTY(String message);
 
@@ -95,6 +108,7 @@ class RadioControl {
          * send LORA message
          * @param message data to send
          * @param size size of data in bytes
+         * @return bool
          */
         bool sendLora(uint8_t* message, unsigned size);
 
@@ -107,6 +121,7 @@ class RadioControl {
         /**
          * send SSTV image
          * @param image pointer to image in RGB565 
+         * @return bool
          */
         bool sendSSTV(uint16_t *image);
 

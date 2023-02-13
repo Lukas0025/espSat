@@ -1,3 +1,8 @@
+/**
+ * espSat project simple esp base satellite
+ * File with implementation of SSDO
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
 #include "ssdo.h"
 
 

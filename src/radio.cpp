@@ -1,3 +1,8 @@
+/**
+ * espSat project simple esp base satellite
+ * File with implementation of radio manager
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
 #include "radio.h"
 
 bool RadioControl::setupRTTY(RTTYSettings_t RTTYSettings, RTTYClient *rtty) {

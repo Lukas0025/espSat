@@ -1,3 +1,9 @@
+/**
+ * espSat project simple esp base satellite
+ * File with header of slow scan digital object protocol
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
+
 #pragma once
 #include <Arduino.h>
 

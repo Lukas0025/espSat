@@ -1,9 +1,14 @@
+/**
+ * espSat project simple esp base satellite
+ * File with implementation of state machine of statellite
+ * @author Lukas Plevac <lukas@plevac.eu>
+ */
 #include "stateDrive.h"
-#include <EEPROM.h>
+#include "persistMem.h"
 
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  10       /* Time ESP32 will go to sleep (in seconds) */
+#define TIME_TO_SLEEP  120       /* Time ESP32 will go to sleep (in seconds) */
 
 namespace StateDrive {
 	RADIOHW      *radio;
@@ -18,15 +23,33 @@ namespace StateDrive {
 		currentState();		
 	}
 	
-	void setup(RADIOHW* radioSX) {     
+	void setup(RADIOHW* radioSX) {
 		radio        = radioSX;
 		radioControl = new RadioControl(radio);
 		telemetry    = new Telemetry("ESPCAMSAT-0001", "?B?B?B?B ", " ?E?E?E?E");
 		sstv         = new SSTVClient(radio);
 		rtty         = new RTTYClient(radio);
-		
+
+		//init persisten memory
 		instruments::setup();
+
+		esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+
+		//detect type of wake up 
+		if (ESP_SLEEP_WAKEUP_TIMER != wakeup_reason) {
+			instruments::incGetBootCounter();
+		}
+
+		//recover state
+		currentState = PersistMem::getLastState();
+
+		//configure wakeup alarm clock
+		esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+
+		//setup telemetry and instrments
 		instruments::autoAddToTelemetry(telemetry);
+
+		DEBUG_PRINT("Sattelite setup done");
 	}
 
 	state_t initState() {
@@ -38,7 +61,7 @@ namespace StateDrive {
 	}
 
 	state_t idleState() {
-		uint16_t transmitCounter = instruments::getTransmitCounter();
+		uint32_t transmitCounter = instruments::getTransmitCounter();
 
 		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
@@ -71,7 +94,7 @@ namespace StateDrive {
 
 		//powerControl.powerOffRadio();
 
-		instruments::incTransmitCounter();
+		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
@@ -82,7 +105,7 @@ namespace StateDrive {
 		radioControl->sendSSTV((uint16_t*)TestData::imageRGB565);
 		//powerControl.powerOffRadio();
 
-		instruments::incTransmitCounter();
+		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
@@ -100,12 +123,12 @@ namespace StateDrive {
 
 		//powerControl.powerOffRadio();
 
-		instruments::incTransmitCounter();
+		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
 	state_t loraSlowSSDOState() {
-		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
+		/*SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
 
 		//powerControl.powerOnRadio();
 		radioControl->setupLora(config::radio::loraTelemetry);
@@ -116,7 +139,7 @@ namespace StateDrive {
 			radioControl->sendLora(packet, packetLen);
 		}
 
-		//powerControl.powerOffRadio();
+		//powerControl.powerOffRadio();*/
 
 		NEXT_SOFT_STATE(sleepState);
 	}
@@ -131,27 +154,32 @@ namespace StateDrive {
 		//powerControl.powerOffBMP280();
 		//powerControl.powerOffVoltmeter();
 
-    SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
+    	SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
     
 		//powerControl.powerOnRadio();
 
 		radioControl->setupLora(config::radio::loraTelemetry);
 		
 		uint8_t packet[SSDO_PACKET_SIZE];
-    for (unsigned i = 0; i < ssdoProtocol.packetsCount(state.length()); i++) { 
-      unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)state.c_str(), i, packet, state.length());
-      radioControl->sendLora(packet, packetLen);
-    }
+    	for (unsigned i = 0; i < ssdoProtocol.packetsCount(state.length()); i++) { 
+      		unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)state.c_str(), i, packet, state.length());
+    		radioControl->sendLora(packet, packetLen);
+    	}
 
 		//powerControl.powerOffRadio();
 
-		instruments::incTransmitCounter();
+		instruments::incGetTransmitCounter();
+
+		DEBUG_PRINT("current TC is ", instruments::getTransmitCounter());
 		NEXT_SOFT_STATE(loraSlowSSDOState);
 	}
 
 	state_t sleepState() {
-		delay(10000);
-		NEXT_SOFT_STATE(idleState);
+		DEBUG_PRINT("Going to deep sleep for ", TIME_TO_SLEEP, "s");
+		// go to deep sleep
+		esp_deep_sleep_start();
+
+		NEXT_HARD_STATE(idleState);
 	}
 	
 }

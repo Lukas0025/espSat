@@ -1,4 +1,5 @@
 /**
+ * espSat project simple esp base satellite
  * File with debug print macros
  * @author Lukas Plevac <lukas@plevac.eu>
  */
@@ -52,7 +53,8 @@
    * Open serial line for debug
    */
   #define DEBUG_BEGIN() { \
-    Serial.begin(9600); \
+    Serial.begin(9600);   \
+    delay(10000);         \
   }
   
   /**
