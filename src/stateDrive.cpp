@@ -8,7 +8,7 @@
 
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  120       /* Time ESP32 will go to sleep (in seconds) */
+#define TIME_TO_SLEEP  30       /* Time ESP32 will go to sleep (in seconds) */
 
 namespace StateDrive {
 	RADIOHW      *radio;
@@ -26,7 +26,7 @@ namespace StateDrive {
 	void setup(RADIOHW* radioSX) {
 		radio        = radioSX;
 		radioControl = new RadioControl(radio);
-		telemetry    = new Telemetry("ESPCAMSAT-0001", "?B?B?B?B ", " ?E?E?E?E");
+		telemetry    = new Telemetry("ESPCAMSAT-0001", "$$$$$$", "");
 		sstv         = new SSTVClient(radio);
 		rtty         = new RTTYClient(radio);
 
@@ -35,8 +35,14 @@ namespace StateDrive {
 
 		esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
 
-		//detect type of wake up 
-		if (ESP_SLEEP_WAKEUP_TIMER != wakeup_reason) {
+		if (ESP_SLEEP_WAKEUP_TIMER != wakeup_reason) { //detect type of wake up 
+			#ifdef ON_BOOT_RESET_PERSIST_MEM
+				PersistMem::reset();
+				#ifdef RESET_PERSIST_MEM_ONLY
+					while(true) {}
+				#endif
+			#endif
+
 			instruments::incGetBootCounter();
 		}
 
@@ -65,6 +71,8 @@ namespace StateDrive {
 
 		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
+		NEXT_SOFT_STATE(rttyState);	
+
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
 		if (transmitCounter % 6 == 1) NEXT_SOFT_STATE(rttyState);	
@@ -81,7 +89,7 @@ namespace StateDrive {
 		//powerControl.powerOnVoltmeter();
 		//instruments::setupTelemetryInstruments();
 
-		String state = telemetry->getState();
+		String state = telemetry->getSonde();
 
 		//powerControl.powerOffBMP280();
 		//powerControl.powerOffVoltmeter();

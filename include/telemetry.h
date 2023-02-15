@@ -40,6 +40,8 @@ class Telemetry {
          */
         String getState();
 
+        String getSonde();
+
     private:
         String craftName;
         String beginString;

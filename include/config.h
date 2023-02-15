@@ -13,6 +13,10 @@
 
 #define RTTY_ASCII 0                 // 7 data bits 
 #define RTTY_ASCII_EXTENDED 1        // 8 data bits
+#define RTTY_ITA2 RADIOLIB_ITA2      // old ita encoding
+
+//#define ON_BOOT_RESET_PERSIST_MEM
+//#define RESET_PERSIST_MEM_ONLY
 
 namespace config {
   namespace radio {
@@ -29,17 +33,17 @@ namespace config {
     
     const RTTYSettings_t rttySlow = {
       .Frequency      = 434.126,        // Base frequency
-      .Shift          = 170,            // RTTY shift
-      .Baud           = 44,             // Baud rate
-      .Encoding       = RADIOLIB_ITA2,  // Encoding ITA2
+      .Shift          = 610,            // RTTY shift
+      .Baud           = 50,             // Baud rate
+      .Encoding       = RTTY_ASCII,     // Encoding ITA2
       .StopBits       = 2               // Number of stopbits 
     };
 
     const RTTYSettings_t rttyFast = {
       .Frequency      = 434.126,        // Base frequency
-      .Shift          = 850,            // RTTY shift
-      .Baud           = 75,             // Baud rate
-      .Encoding       = RADIOLIB_ITA2,  // Encoding ITA2
+      .Shift          = 610,            // RTTY shift
+      .Baud           = 100,            // Baud rate
+      .Encoding       = RTTY_ASCII ,    // Encoding ITA2
       .StopBits       = 2               // Number of stopbits 
     };
 
