@@ -77,7 +77,22 @@ namespace instruments {
     /*
      * This is telemetry support functions return state of senzor in String
      */
-    String uptimeStr()           { return String(getUptime() / 1000) + "S"; }
+
+    String intAs2Str(unsigned val) {
+      if (val > 99) val = val % 100;
+      if (val < 10) return "0" + String(val);
+      
+      return String(val);
+    }
+
+    String uptimeStr()           { 
+      return intAs2Str(getUptime() / 1000 / 3600)    + ":" + // Hour
+             intAs2Str(getUptime() / 1000 / 60 % 60) + ":" + // Min
+             intAs2Str(getUptime() / 1000 % 60);             // Sec
+    }
+
+    String latStr()              { return "0.0"; }
+    STring lonStr()              { return "0.0"; }
     String voltageStr()          { return String(getVoltage()) + "V"; }
     String temperatureStr()      { return String(getTemperature()) + "C"; }
     String altitudeStr()         { return String(getAlt()) + "M"; }
@@ -90,13 +105,15 @@ namespace instruments {
      * Add standart instruments to telemetry
      */
     void autoAddToTelemetry(Telemetry *telemetry) {
-      telemetry->addInstrument("uptime",      uptimeStr);
+      telemetry->addInstrument("TCOUNTER",    transmitCounterStr);
+      telemetry->addInstrument("TIME",        uptimeStr);
+      telemetry->addInstrument("LAT",         latStr);
+      telemetry->addInstrument("LON",         lonStr);
+      telemetry->addInstrument("ALT",         altitudeStr);
       telemetry->addInstrument("voltage",     voltageStr);
       telemetry->addInstrument("temperature", temperatureStr);
-      telemetry->addInstrument("altitude",    altitudeStr);
       telemetry->addInstrument("pressure",    pressureStr);
       telemetry->addInstrument("lcounter",    loraCounterStr);
-      telemetry->addInstrument("tcounter",    transmitCounterStr);
       telemetry->addInstrument("bcounter",    bootCounterStr);
     }
 }

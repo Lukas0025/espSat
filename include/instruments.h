@@ -87,7 +87,7 @@ namespace instruments {
     
 
     /**
-     * get UPTIME of satellite in seconds for telemetry
+     * get UPTIME of satellite in seconds for telemetry in HH::MM::SS
      * @return String
      */
     String uptimeStr();
@@ -132,6 +132,26 @@ namespace instruments {
      * @return string
      */
     String bootCounterStr();
+
+    /**
+     * Convert integer to 2 char string
+     * Put 0 if < 10 and %100 when > 99
+     * @param val value to convert to string
+     * @return tring of val
+     */
+    String intAs2Str(unsigned val);
+
+    /**
+     * Get lat in string
+     * @return position lat
+     */
+    String latStr();
+    
+    /**
+     * Get lon in string
+     * @return position lon
+     */
+    STring lonStr();
 
     /**
      * Add standart instruments to telemetry

@@ -26,7 +26,7 @@ namespace StateDrive {
 	void setup(RADIOHW* radioSX) {
 		radio        = radioSX;
 		radioControl = new RadioControl(radio);
-		telemetry    = new Telemetry("ESPCAMSAT-0001", "$$$$$$", "");
+		telemetry    = new Telemetry("ESPCAMSAT-0001", "$$$$$$", "\n");
 		sstv         = new SSTVClient(radio);
 		rtty         = new RTTYClient(radio);
 
@@ -89,7 +89,7 @@ namespace StateDrive {
 		//powerControl.powerOnVoltmeter();
 		//instruments::setupTelemetryInstruments();
 
-		String state = telemetry->getSonde();
+		String state = telemetry->getUKHAS();
 
 		//powerControl.powerOffBMP280();
 		//powerControl.powerOffVoltmeter();
@@ -157,7 +157,7 @@ namespace StateDrive {
 		//powerControl.powerOnVoltmeter();
 		//instruments::setupTelemetryInstruments();
 
-		String state = telemetry->getState();
+		String state = telemetry->getUKHAS();
 
 		//powerControl.powerOffBMP280();
 		//powerControl.powerOffVoltmeter();

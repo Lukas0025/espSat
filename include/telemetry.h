@@ -40,7 +40,27 @@ class Telemetry {
          */
         String getState();
 
-        String getSonde();
+        /**
+         * GetCurrent state of telemetry in UKHAS format string to transmit
+         * Format is $$<payload>,<data>,<data>,...,<last data>*<checksum>\n
+         * where $$ is beginString and \n is end string
+         * @return String of state in UKHAS format
+         */
+        String getUKHAS();
+
+        /**
+         * Check if instriments is in correct order for UKHAS telemetry format
+         * Recomended format is $$<payload>,<message number>,<time>,<latitude>,<longitude>,<altitude>,<data>,...,<last data>*<checksum>
+         * @return bool True if is ok 
+         */
+        bool verifyUKHAS();
+
+        /**
+         * Get CRC of UKHAS message
+         * @param message string for CRC calculation
+         * @return uint16_t CRC 
+         */
+        uint16_t getUKHASCRC(String message);
 
     private:
         String craftName;
