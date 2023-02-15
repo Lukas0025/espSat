@@ -93,10 +93,10 @@ namespace instruments {
 
     String latStr()              { return "0.0"; }
     STring lonStr()              { return "0.0"; }
-    String voltageStr()          { return String(getVoltage()) + "V"; }
-    String temperatureStr()      { return String(getTemperature()) + "C"; }
-    String altitudeStr()         { return String(getAlt()) + "M"; }
-    String pressureStr()         { return String(getPressure()) + "hpa"; }
+    String voltageStr()          { return String(getVoltage()); }
+    String temperatureStr()      { return String(getTemperature()); }
+    String altitudeStr()         { return String(getAlt()); }
+    String pressureStr()         { return String(getPressure()); }
     String loraCounterStr()      { return String(getLoraCounter()); }
     String transmitCounterStr()  { return String(getTransmitCounter()); }
     String bootCounterStr()      { return String(getBootCounter()); }
