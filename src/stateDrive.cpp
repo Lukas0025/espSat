@@ -6,7 +6,6 @@
 #include "stateDrive.h"
 #include "persistMem.h"
 
-
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  30       /* Time ESP32 will go to sleep (in seconds) */
 
@@ -29,6 +28,11 @@ namespace StateDrive {
 		telemetry    = new Telemetry("ESPCAMSAT-0001", "$$$$$$", "\n");
 		sstv         = new SSTVClient(radio);
 		rtty         = new RTTYClient(radio);
+
+		DEBUG_PRINT("Total heap: ", ESP.getHeapSize());
+		DEBUG_PRINT("Free  heap: ", ESP.getFreeHeap());
+		DEBUG_PRINT("Total PSRAM: ", ESP.getPsramSize());
+		DEBUG_PRINT("Free  PSRAM: ", ESP.getFreePsram());
 
 		//init persisten memory
 		instruments::setup();
@@ -71,8 +75,6 @@ namespace StateDrive {
 
 		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
-		NEXT_SOFT_STATE(rttyState);	
-
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
 		if (transmitCounter % 6 == 1) NEXT_SOFT_STATE(rttyState);	
@@ -85,86 +87,72 @@ namespace StateDrive {
 	}
 
 	state_t rttyState() {
-		//powerControl.powerOnBMP280();
-		//powerControl.powerOnVoltmeter();
-		//instruments::setupTelemetryInstruments();
-
 		String state = telemetry->getUKHAS();
-
-		//powerControl.powerOffBMP280();
-		//powerControl.powerOffVoltmeter();
-		//powerControl.powerOnRadio();
 
 		radioControl->setupFSK(config::radio::fsk);
 		radioControl->setupRTTY(config::radio::rttySlow, rtty);
 
 		radioControl->sendRTTY(state);
 
-		//powerControl.powerOffRadio();
-
 		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
 	state_t sstvState() {
-		//powerControl.powerOnRadio();
+		uint16_t* image = instruments::cameraCaptureRGB565();
+
 		radioControl->setupFSK(config::radio::fsk);
 		radioControl->setupSSTV(config::radio::sstv, sstv);
-		radioControl->sendSSTV((uint16_t*)TestData::imageRGB565);
-		//powerControl.powerOffRadio();
+		radioControl->sendSSTV(image);
+
+		free(image);
 
 		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
 	state_t loraFastSSDOState() {
-		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
+		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
-		//powerControl.powerOnRadio();
+		auto fb = instruments::cameraCaptureJpgHD();
+
 		radioControl->setupLora(config::radio::loraSSDVFast);
 
 		uint8_t packet[SSDO_PACKET_SIZE];
-		for (unsigned i = 0; i < ssdoProtocol.packetsCount(TestData::imageJPGHDSize); i++) { 
-			unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)TestData::imageJPGHD, i, packet, TestData::imageJPGHDSize);
+		for (unsigned i = 0; i < ssdoProtocol.packetsCount(fb->len); i++) { 
+			unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
 			radioControl->sendLora(packet, packetLen);
 		}
 
-		//powerControl.powerOffRadio();
+		esp_camera_fb_return(fb);
 
 		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
 	state_t loraSlowSSDOState() {
-		/*SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
+		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
-		//powerControl.powerOnRadio();
+		auto fb = instruments::cameraCaptureJpgQVGA();
+
 		radioControl->setupLora(config::radio::loraTelemetry);
 
 		uint8_t packet[SSDO_PACKET_SIZE];
-		for (unsigned i = 0; i < 0; i++) { 
-			unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)TestData::imageJPGHD, i, packet, TestData::imageJPGHDSize);
+		for (unsigned i = 0; i < fb->len; i++) { 
+			unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
 			radioControl->sendLora(packet, packetLen);
 		}
 
-		//powerControl.powerOffRadio();*/
+		esp_camera_fb_return(fb);
 
 		NEXT_SOFT_STATE(sleepState);
 	}
 
 	state_t loraTelemetryState() {
-		//powerControl.powerOnBMP280();
-		//powerControl.powerOnVoltmeter();
-		//instruments::setupTelemetryInstruments();
-
 		String state = telemetry->getUKHAS();
 
-		//powerControl.powerOffBMP280();
-		//powerControl.powerOffVoltmeter();
-
-    	SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter());
+    	SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
     
-		//powerControl.powerOnRadio();
 
 		radioControl->setupLora(config::radio::loraTelemetry);
 		
@@ -178,7 +166,6 @@ namespace StateDrive {
 
 		instruments::incGetTransmitCounter();
 
-		DEBUG_PRINT("current TC is ", instruments::getTransmitCounter());
 		NEXT_SOFT_STATE(loraSlowSSDOState);
 	}
 

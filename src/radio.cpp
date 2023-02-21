@@ -38,6 +38,8 @@ bool RadioControl::setupRTTY(RTTYSettings_t RTTYSettings, RTTYClient *rtty) {
 bool RadioControl::setupFSK(FSKSettings_t FSKSettings) {
 
   DEBUG_PRINT("Setuping FSK");
+  delay(1000);
+  DEBUG_PRINT("Setuping FSK");
  
   int16_t state = this->radio->beginFSK(
     FSKSettings.Frequency,
@@ -186,6 +188,38 @@ bool RadioControl::sendSSTV(uint16_t *image) {
       g = (g * 255 + 31) / 63;
       
       line[j] = (r << 16) | (g << 8) | b;
+    }
+    
+    DEBUG_PRINT("sstv sending line ", i); 
+    this->sstv->sendLine(line);
+  }
+
+  // turn off transmitter
+  this->radio->standby(); 
+
+  return true;
+}
+
+bool RadioControl::sendSSTVGS(uint8_t *image) {
+
+  if (!this->sstvReady) {
+    ERROR_PRINT("ERROR sstv not setuped");
+    return false;
+  }
+
+  DEBUG_PRINT("sstv send sync tone");
+  this->sstv->idle();
+  delay(10000);
+  
+  DEBUG_PRINT("sstv set headers");
+  this->sstv->sendHeader();  
+
+  for(uint8_t i = 0; i < 240; i++) {
+    uint32_t line[320];
+
+    //parse line
+    for (uint16_t j = 0; j < 320; j++) {
+      line[j] = (image[j] << 16) | (image[j] << 8) | image[j];
     }
     
     DEBUG_PRINT("sstv sending line ", i); 

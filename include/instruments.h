@@ -6,8 +6,9 @@
 #pragma once
 
 #include <Arduino.h>
-#include "./telemetry.h"
-#include "./config.h"
+#include "telemetry.h"
+#include "config.h"
+#include "esp_camera.h"
 
 namespace instruments {
 
@@ -85,6 +86,25 @@ namespace instruments {
      */
     float getTemperature();
     
+    /**
+     * Get image from camera in 320x240 RGB565 format
+     * @post must free pointer
+     * @return pointer to image
+     */
+    uint16_t* cameraCaptureRGB565();
+
+    /**
+     * Get JPG image from camera in QVGA resolution
+     * @post must free frame buffer
+     * @return pointer to framebuffer
+     */
+    camera_fb_t* cameraCaptureJpgQVGA();
+
+    /* Get JPG image from camera in UXGA resolution
+     * @post must free frame buffer
+     * @return pointer to framebuffer
+     */
+    camera_fb_t* cameraCaptureJpgHD();
 
     /**
      * get UPTIME of satellite in seconds for telemetry in HH::MM::SS
@@ -151,7 +171,7 @@ namespace instruments {
      * Get lon in string
      * @return position lon
      */
-    STring lonStr();
+    String lonStr();
 
     /**
      * Add standart instruments to telemetry

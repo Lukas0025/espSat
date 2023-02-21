@@ -203,7 +203,7 @@
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/fb_gfx/include",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/dio_qspi/include",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/cores/esp32",
-                "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v1",
+                "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/variants/esp32",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/AsyncUDP/src",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src",
@@ -435,7 +435,7 @@
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/fb_gfx/include",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/dio_qspi/include",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/cores/esp32",
-                    "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v1",
+                    "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/variants/esp32",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/AsyncUDP/src",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src",
@@ -472,7 +472,8 @@
             },
             "defines": [
                 "PLATFORMIO=60106",
-                "ARDUINO_TTGO_LoRa32_V1",
+                "ARDUINO_ESP32_DEV",
+                "BOARD_HAS_PSRAM",
                 "HAVE_CONFIG_H",
                 "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\"",
                 "UNITY_INCLUDE_CONFIG_H",
@@ -485,8 +486,8 @@
                 "ESP32",
                 "F_CPU=240000000L",
                 "ARDUINO=10812",
-                "ARDUINO_VARIANT=\"ttgo-lora32-v1\"",
-                "ARDUINO_BOARD=\"TTGO LoRa32-OLED V1\"",
+                "ARDUINO_VARIANT=\"esp32\"",
+                "ARDUINO_BOARD=\"AI Thinker ESP32-CAM\"",
                 "ARDUINO_PARTITION_default",
                 ""
             ],
@@ -494,6 +495,7 @@
             "cppStandard": "c++11",
             "compilerPath": "/home/lukasplevac/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc",
             "compilerArgs": [
+                "-mfix-esp32-psram-cache-issue",
                 "-mlongcalls",
                 ""
             ]

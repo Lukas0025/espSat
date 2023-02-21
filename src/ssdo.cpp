@@ -6,9 +6,10 @@
 #include "ssdo.h"
 
 
-SSDO::SSDO(uint32_t senderId, uint32_t objectId) {
-	this->senderId = senderId;
-	this->objectId = objectId;
+SSDO::SSDO(uint32_t senderId, uint32_t objectId, uint8_t type) {
+	this->senderId   = senderId;
+	this->objectId   = objectId;
+	this->objectType = type;
 }
 
 uint8_t SSDO::setPacket(uint8_t* data, uint32_t packetId, uint8_t* packet, uint32_t dataSize) {

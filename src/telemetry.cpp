@@ -5,6 +5,7 @@
  */
 
 #include "telemetry.h"
+#include "debug.h"
 
 String Telemetry::getState() {
   String message = this->beginString + " " + this->craftName + " :: ";
@@ -29,7 +30,7 @@ String Hex(uint16_t Character) {
   String hexCode  = "";
 
   for (int i = 12; i >= 0; i -= 4) {
-    hexcode += HexTable[(Character >> i) & 0b1111];
+    hexCode += HexTable[(Character >> i) & 0b1111];
   }
 
   return hexCode;
@@ -39,15 +40,15 @@ uint16_t Telemetry::getUKHASCRC(String message) {
   uint16_t CRC         = 0xffff; // Seed
   uint16_t xPolynomial = 0x1021;
    
-  for (unsigned i = strlen(this->beginString); i < strlen(message); i++) {
+  for (unsigned i = this->beginString.length(); i < message.length(); i++) {
     CRC ^= (((uint8_t) message[i]) << 8);
-    for (j=0; j<8; j++) {
+    for (unsigned j = 0; j < 8; j++) {
       if (CRC & 0x8000) CRC = (CRC << 1) ^ 0x1021;
       else CRC <<= 1;
     }
   }
 
-  return crc;
+  return CRC;
 }
 
 bool Telemetry::verifyUKHAS() {
@@ -60,10 +61,10 @@ bool Telemetry::verifyUKHAS() {
     "LAT",
     "LON",
     "ALT"
-  }
+  };
 
   for (unsigned i = 0; i < 5; i++) {
-    if (this->payloadName[i] != expectedData) return false;
+    if (this->payloadName[i] != expectedData[i]) return false;
   }
 
   return true;
@@ -73,7 +74,7 @@ String Telemetry::getUKHAS() {
   String message = this->beginString + this->craftName;
 
   if (!this->verifyUKHAS()) {
-    DEBUG_WARNING("unrecomended order of data for UKHAS recomended is <TCOUNTER>,<TIME>,<LAT>,<LON>,<ALT>,<OTHER DATA>,...,<OTHER DATA>");
+    WARNING_PRINT("unrecomended order of data for UKHAS recomended is <TCOUNTER>,<TIME>,<LAT>,<LON>,<ALT>,<OTHER DATA>,...,<OTHER DATA>");
   }
 
   for (unsigned i = 0; i < this->payloadLen; i++) {
@@ -83,7 +84,7 @@ String Telemetry::getUKHAS() {
     message += "," + instrumentOut;
   }
 
-  return '*' + Hex(this->getUKHASCRC(message)) + this->endString;
+  return message + '*' + Hex(this->getUKHASCRC(message)) + this->endString;
 }
 
 void Telemetry::addInstrument(String name, String (*payloadGet)()) {

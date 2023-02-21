@@ -11,6 +11,9 @@
 #define SSDO_PACKET_SIZE 255
 #define SSDO_VERSION 1
 
+#define SSDO_TYPE_TEXT 0
+#define SSDO_TYPE_JPG  1
+
 class SSDO {
 	public:
 		/**
@@ -18,8 +21,9 @@ class SSDO {
 		 * Data encoder/decoder for unbearable medium transfer
 		 * @param senderId id of trasmitter set do not use if only recive
 		 * @param objectId id of trasferd object do not use if only recive
+		 * @param type type id of object 
 		 */
-		SSDO(uint32_t senderId, uint32_t objectId);
+		SSDO(uint32_t senderId, uint32_t objectId, uint8_t type);
 
 		/**
 		 * Create new SSDO packet
@@ -40,4 +44,5 @@ class SSDO {
 		uint8_t hamming(uint8_t bits);
 		uint32_t senderId;
 		uint32_t objectId;
+		uint8_t  objectType;
 };

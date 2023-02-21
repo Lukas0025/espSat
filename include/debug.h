@@ -48,6 +48,7 @@
 
 // if macro debug defined
 #ifdef DEBUG
+  const char HexTable[] = "0123456789ABCDEF";
 
   /**
    * Open serial line for debug
@@ -55,6 +56,15 @@
   #define DEBUG_BEGIN() { \
     Serial.begin(9600);   \
     delay(10000);         \
+  }
+
+  #define DEBUG_PRINT_HEX(DATA, LEN) {                 \
+    Serial.println("");                                \
+    for (unsigned i = 0; i < LEN; i++) {               \
+      Serial.print(HexTable[(DATA[i] >> 4) & 0b1111]); \
+      Serial.print(HexTable[DATA[i]        & 0b1111]); \
+    }                                                  \
+    Serial.println("");                                \
   }
   
   /**
@@ -113,4 +123,5 @@
   #define DEBUG_PRINT(X)         {}
   #define WARNING_PRINT(X)       {}
   #define ERROR_PRINT(X)         {}
+  #define DEBUG_PRINT_HEX(DATA, LEN) {}
 #endif

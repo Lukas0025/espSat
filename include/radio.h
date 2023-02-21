@@ -125,6 +125,8 @@ class RadioControl {
          */
         bool sendSSTV(uint16_t *image);
 
+        bool sendSSTVGS(uint8_t *image);
+
     private:
         RADIOHW    *radio;
         RTTYClient *rtty;
