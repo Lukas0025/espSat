@@ -7,12 +7,25 @@
 #pragma once
 #include <Arduino.h>
 
-#define SSDO_PACKET_DATA_SIZE 238 / 2
+#define SSDO_PACKET_DATA_SIZE (SSDO_PACKET_SIZE - sizeof(ssdoHeader_t))
 #define SSDO_PACKET_SIZE 255
 #define SSDO_VERSION 1
 
 #define SSDO_TYPE_TEXT 0
 #define SSDO_TYPE_JPG  1
+
+typedef struct {
+	char     protName[4] = {'S', 'S', 'D', 'O'};
+	uint8_t  version     = SSDO_VERSION;
+	uint32_t src;
+	uint32_t pktId;
+	uint8_t  pktSize;
+	uint32_t objId;
+	uint32_t objSize;
+	uint8_t  objType;
+	uint16_t crc;
+} ssdoHeader_t;
+
 
 class SSDO {
 	public:
@@ -39,9 +52,25 @@ class SSDO {
 		 * @param dataSize size of data to packetize
 		 */
 		uint32_t packetsCount(uint32_t dataSize) { return ((float) dataSize / SSDO_PACKET_DATA_SIZE) + 1; }
+
+		/**
+		 * Decode SSDO packet 
+		 * @param data    pointer to save decoded data from packet
+		 * @param packet  pointer to packet to decode
+		 * @param header  pointer to save decoded header
+		 * @return bool true if success decode
+		 */
+		bool decodePacket(uint8_t* data, uint8_t* packet, ssdoHeader_t* header);
+
 	private:
-		uint8_t parity(uint8_t data);
-		uint8_t hamming(uint8_t bits);
+		/**
+		 * Calculate CRC check sum for data
+		 * @param data pointer to data to calc CRC
+		 * @param len  length of data
+		 * @return CRC in uint16_t
+		 */
+		uint16_t calcCRC(uint8_t data, uint32_t len);
+		
 		uint32_t senderId;
 		uint32_t objectId;
 		uint8_t  objectType;
