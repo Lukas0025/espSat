@@ -189,4 +189,7 @@ namespace config {
     uint8_t type       = TELEMETRY_TYPE_UKHAS;
   }
 
+  namespace sleep {
+    uint16_t timeToSleep = 30; //in S
+  }
 }

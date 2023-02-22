@@ -7,7 +7,6 @@
 #include "persistMem.h"
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  30       /* Time ESP32 will go to sleep (in seconds) */
 
 namespace StateDrive {
 	RADIOHW      *radio;
@@ -54,7 +53,7 @@ namespace StateDrive {
 		currentState = PersistMem::getLastState();
 
 		//configure wakeup alarm clock
-		esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+		esp_sleep_enable_timer_wakeup(config::sleep::timeToSleep * uS_TO_S_FACTOR);
 
 		//setup telemetry and instrments
 		instruments::autoAddToTelemetry(telemetry);
@@ -173,7 +172,8 @@ namespace StateDrive {
 	}
 
 	state_t sleepState() {
-		DEBUG_PRINT("Going to deep sleep for ", TIME_TO_SLEEP, "s");
+		DEBUG_PRINT("Going to deep sleep for ", config::sleep::timeToSleep, "s");
+		
 		// go to deep sleep
 		esp_deep_sleep_start();
 
