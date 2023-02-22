@@ -7,11 +7,15 @@
 
 #include "radio.h"
 #include "pins.h"
+#include <Arduino.h>
 #include "esp_camera.h"
 
 #define RTTY_ASCII 0                 // 7 data bits 
 #define RTTY_ASCII_EXTENDED 1        // 8 data bits
 #define RTTY_ITA2 RADIOLIB_ITA2      // old ita encoding
+
+#define TELEMETRY_TYPE_UKHAS   0 //UKHAS Telemetry format like $$$$craftName,var,var,...,var*<checksum>\n
+#define TELEMETRY_TYPE_RAWVARS 1 //Simple format          like $$$$ craftName :: varname:Var;varname:var ...
 
 //#define ON_BOOT_RESET_PERSIST_MEM
 //#define RESET_PERSIST_MEM_ONLY
@@ -114,6 +118,7 @@ namespace config {
       .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
   }
+
   namespace radio {
     const FSKSettings_t fsk = {
       .Frequency      = 434.126,
@@ -160,7 +165,7 @@ namespace config {
       .Gain           = 0
     };
 
-    const LoraSettings_t loraSSDVFast = {
+    const LoraSettings_t loraSSDOFast = {
       .Frequency      = 434.126,
       .Bandwidth      = 250,
       .SpreadFactor   = 7,
@@ -171,6 +176,17 @@ namespace config {
       .PreambleLength = 8,
       .Gain           = 0
     };
+
+    const uint32_t craftIdLoraHDImg     = 0;
+    const uint32_t craftIdLoraImg       = 1;
+    const uint32_t craftIdLoraTelemetry = 2;
+  }
+
+  namespace telemetry {
+    String craftId     = "ESPCAMSAT-0001";
+    String beginString = "$$$$$$";
+    String endString   = "\n";
+    uint8_t type       = TELEMETRY_TYPE_UKHAS;
   }
 
 }

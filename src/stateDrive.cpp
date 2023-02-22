@@ -25,7 +25,7 @@ namespace StateDrive {
 	void setup(RADIOHW* radioSX) {
 		radio        = radioSX;
 		radioControl = new RadioControl(radio);
-		telemetry    = new Telemetry("ESPCAMSAT-0001", "$$$$$$", "\n");
+		telemetry    = new Telemetry(config::telemetry::craftId, config::telemetry::beginString, config::telemetry::endString);
 		sstv         = new SSTVClient(radio);
 		rtty         = new RTTYClient(radio);
 
@@ -87,7 +87,9 @@ namespace StateDrive {
 	}
 
 	state_t rttyState() {
-		String state = telemetry->getUKHAS();
+		
+		if (config::telemetry::type == TELEMETRY_TYPE_RAWVARS) state = telemetry->getState();
+		if (config::telemetry::type == TELEMETRY_TYPE_UKHAS)   state = telemetry->getUKHAS();
 
 		radioControl->setupFSK(config::radio::fsk);
 		radioControl->setupRTTY(config::radio::rttySlow, rtty);
@@ -112,11 +114,11 @@ namespace StateDrive {
 	}
 
 	state_t loraFastSSDOState() {
-		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
+		SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraHDImg, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
 		auto fb = instruments::cameraCaptureJpgHD();
 
-		radioControl->setupLora(config::radio::loraSSDVFast);
+		radioControl->setupLora(config::radio::loraSSDOFast);
 
 		uint8_t packet[SSDO_PACKET_SIZE];
 		for (unsigned i = 0; i < ssdoProtocol.packetsCount(fb->len); i++) { 
@@ -131,7 +133,7 @@ namespace StateDrive {
 	}
 
 	state_t loraSlowSSDOState() {
-		SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
+		SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraImg, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
 		auto fb = instruments::cameraCaptureJpgQVGA();
 
@@ -149,9 +151,12 @@ namespace StateDrive {
 	}
 
 	state_t loraTelemetryState() {
-		String state = telemetry->getUKHAS();
+		String state = "";
 
-    	SSDO ssdoProtocol = SSDO(LORA_CRAFT_ID, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
+		if (config::telemetry::type == TELEMETRY_TYPE_RAWVARS) state = telemetry->getState();
+		if (config::telemetry::type == TELEMETRY_TYPE_UKHAS)   state = telemetry->getUKHAS();
+
+    	SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraTelemetry, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
     
 
 		radioControl->setupLora(config::radio::loraTelemetry);
@@ -161,8 +166,6 @@ namespace StateDrive {
       		unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)state.c_str(), i, packet, state.length());
     		radioControl->sendLora(packet, packetLen);
     	}
-
-		//powerControl.powerOffRadio();
 
 		instruments::incGetTransmitCounter();
 
