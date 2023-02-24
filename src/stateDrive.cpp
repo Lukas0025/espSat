@@ -74,6 +74,8 @@ namespace StateDrive {
 
 		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
+		NEXT_SOFT_STATE(sstvState);
+
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
 		if (transmitCounter % 6 == 1) NEXT_SOFT_STATE(rttyState);	

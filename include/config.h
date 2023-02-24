@@ -149,7 +149,7 @@ namespace config {
 
     const SSTVSettings_t sstv = {
       .Frequency      = 434.126,        // Base frequency
-      .Correction     = .98,
+      .Correction     = .982,
       .Mode           = Martin1
     };
   
