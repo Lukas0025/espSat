@@ -17,14 +17,14 @@
 typedef struct {
 	char     protName[4] = {'S', 'S', 'D', 'O'};
 	uint8_t  version     = SSDO_VERSION;
-	uint32_t src;
-	uint32_t pktId;
-	uint8_t  pktSize;
-	uint32_t objId;
-	uint32_t objSize;
-	uint8_t  objType;
-	uint16_t crc;
-} ssdoHeader_t;
+	uint32_t src         = 0;
+	uint32_t pktId       = 0;
+	uint8_t  pktSize     = 0;
+	uint32_t objId       = 0;
+	uint32_t objSize     = 0;
+	uint8_t  objType     = 0;
+	uint16_t crc         = 0;
+} __attribute__((packed)) ssdoHeader_t;
 
 
 class SSDO {
@@ -69,7 +69,7 @@ class SSDO {
 		 * @param len  length of data
 		 * @return CRC in uint16_t
 		 */
-		uint16_t calcCRC(uint8_t data, uint32_t len);
+		uint16_t calcCRC(uint8_t *data, uint32_t len);
 		
 		uint32_t senderId;
 		uint32_t objectId;

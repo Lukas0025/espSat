@@ -79,9 +79,9 @@ namespace config {
       .ledc_channel = LEDC_CHANNEL_0,
 
       .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-      .frame_size = FRAMESIZE_QVGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
+      .frame_size = FRAMESIZE_QQVGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
 
-      .jpeg_quality = 12, //0-63, for OV series camera sensors, lower number means higher quality
+      .jpeg_quality = 63, //0-63, for OV series camera sensors, lower number means higher quality
       .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
       .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
@@ -111,9 +111,9 @@ namespace config {
       .ledc_channel = LEDC_CHANNEL_0,
 
       .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-      .frame_size = FRAMESIZE_UXGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
+      .frame_size = FRAMESIZE_HD,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
 
-      .jpeg_quality = 12, //0-63, for OV series camera sensors, lower number means higher quality
+      .jpeg_quality = 30, //0-63, for OV series camera sensors, lower number means higher quality
       .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
       .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
@@ -149,7 +149,7 @@ namespace config {
 
     const SSTVSettings_t sstv = {
       .Frequency      = 434.126,        // Base frequency
-      .Correction     = .982,
+      .Correction     = .981,
       .Mode           = Martin1
     };
   
@@ -159,7 +159,7 @@ namespace config {
       .SpreadFactor   = 11,
       .CodeRate       = 8,
       .SyncWord       = 0x12,
-      .Power          = 10,
+      .Power          = 17,
       .CurrentLimit   = 100,
       .PreambleLength = 8,
       .Gain           = 0
@@ -171,7 +171,7 @@ namespace config {
       .SpreadFactor   = 7,
       .CodeRate       = 6,
       .SyncWord       = 0x12,
-      .Power          = 10,
+      .Power          = 17,
       .CurrentLimit   = 100,
       .PreambleLength = 8,
       .Gain           = 0
@@ -183,13 +183,13 @@ namespace config {
   }
 
   namespace telemetry {
-    String craftId     = "ESPCAMSAT-0001";
-    String beginString = "$$$$$$";
-    String endString   = "\n";
-    uint8_t type       = TELEMETRY_TYPE_UKHAS;
+    const String craftId     = "ESPCAMSAT-0001";
+    const String beginString = "$$$$$$";
+    const String endString   = "\n";
+    const uint8_t type       = TELEMETRY_TYPE_UKHAS;
   }
 
   namespace sleep {
-    uint16_t timeToSleep = 30; //in S
+    const uint16_t timeToSleep = 5 * 60; //in S
   }
 }

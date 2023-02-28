@@ -74,7 +74,10 @@ namespace StateDrive {
 
 		DEBUG_PRINT("Sattelite is in IDLE state. Current transmitCounter is ", transmitCounter);
 
-		NEXT_SOFT_STATE(sstvState);
+		//increment transmit counter to prevent deadLock loops when same state fail
+		instruments::incGetTransmitCounter();
+
+		NEXT_SOFT_STATE(loraFastSSDOState);
 
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
@@ -89,6 +92,7 @@ namespace StateDrive {
 
 	state_t rttyState() {
 		
+		String state = "";
 		if (config::telemetry::type == TELEMETRY_TYPE_RAWVARS) state = telemetry->getState();
 		if (config::telemetry::type == TELEMETRY_TYPE_UKHAS)   state = telemetry->getUKHAS();
 
@@ -97,7 +101,6 @@ namespace StateDrive {
 
 		radioControl->sendRTTY(state);
 
-		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
@@ -110,7 +113,6 @@ namespace StateDrive {
 
 		free(image);
 
-		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
@@ -119,17 +121,19 @@ namespace StateDrive {
 
 		auto fb = instruments::cameraCaptureJpgHD();
 
-		radioControl->setupLora(config::radio::loraSSDOFast);
+		if (fb.data) {
+			radioControl->setupLora(config::radio::loraSSDOFast);
 
-		uint8_t packet[SSDO_PACKET_SIZE];
-		for (unsigned i = 0; i < ssdoProtocol.packetsCount(fb->len); i++) { 
-			unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
-			radioControl->sendLora(packet, packetLen);
+			uint8_t packet[SSDO_PACKET_SIZE];
+			for (unsigned i = 0; i < ssdoProtocol.packetsCount(fb.len); i++) { 
+				unsigned packetLen = ssdoProtocol.setPacket(fb.data, i, packet, fb.len);
+				radioControl->sendLora(packet, packetLen);
+			}
+
+			free(fb.data);
+			
 		}
 
-		esp_camera_fb_return(fb);
-
-		instruments::incGetTransmitCounter();
 		NEXT_SOFT_STATE(sleepState);
 	}
 
@@ -138,15 +142,17 @@ namespace StateDrive {
 
 		auto fb = instruments::cameraCaptureJpgQVGA();
 
-		radioControl->setupLora(config::radio::loraTelemetry);
+		if (fb) {
+			radioControl->setupLora(config::radio::loraTelemetry);
 
-		uint8_t packet[SSDO_PACKET_SIZE];
-		for (unsigned i = 0; i < fb->len; i++) { 
-			unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
-			radioControl->sendLora(packet, packetLen);
+			uint8_t packet[SSDO_PACKET_SIZE];
+			for (unsigned i = 0; i < fb->len; i++) { 
+				unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
+				radioControl->sendLora(packet, SSDO_PACKET_SIZE);
+			}
+
+			esp_camera_fb_return(fb);
 		}
-
-		esp_camera_fb_return(fb);
 
 		NEXT_SOFT_STATE(sleepState);
 	}
@@ -159,7 +165,6 @@ namespace StateDrive {
 
     	SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraTelemetry, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
     
-
 		radioControl->setupLora(config::radio::loraTelemetry);
 		
 		uint8_t packet[SSDO_PACKET_SIZE];
@@ -167,8 +172,6 @@ namespace StateDrive {
       		unsigned packetLen = ssdoProtocol.setPacket((uint8_t*)state.c_str(), i, packet, state.length());
     		radioControl->sendLora(packet, packetLen);
     	}
-
-		instruments::incGetTransmitCounter();
 
 		NEXT_SOFT_STATE(loraSlowSSDOState);
 	}

@@ -79,6 +79,14 @@ namespace instruments {
       return bc;
     }
 
+    void setCameraSettings() {
+      // Rotate some frames to get parametres of enviromet and auto tune parametres
+      for (int i = 0; i < 10; i++) {
+        auto fb = esp_camera_fb_get();   
+        esp_camera_fb_return(fb);
+      }
+    }
+
     camera_fb_t* cameraCaptureJpgQVGA() {
       esp_err_t err = esp_camera_init(&config::camera::JpgQVGA);
 
@@ -87,7 +95,9 @@ namespace instruments {
         return NULL;
       }
 
-      vTaskDelay(500 / portTICK_RATE_MS);
+      instruments::setCameraSettings();
+
+      delay(500);
 
       camera_fb_t *fb = esp_camera_fb_get();
       if (!fb) {
@@ -103,19 +113,23 @@ namespace instruments {
       return fb;
     }
 
-    camera_fb_t* cameraCaptureJpgHD() {
+    JpgRst::buffer_t cameraCaptureJpgHD() {
       esp_err_t err = esp_camera_init(&config::camera::jpgHD);
+      JpgRst::buffer_t res;
+      
       if (err != ESP_OK) {
         ERROR_PRINT("Camera init failed with error ", err);
-        return NULL;
+        return res;
       }
 
-      vTaskDelay(500 / portTICK_RATE_MS);
+      instruments::setCameraSettings();
+
+      delay(500);
 
       camera_fb_t *fb = esp_camera_fb_get();
       if (!fb) {
         ERROR_PRINT("Camera capture failed");
-        return NULL;
+        return res;
       } 
 
       DEBUG_PRINT("Captured image Width:",  fb->width);
@@ -123,33 +137,19 @@ namespace instruments {
       DEBUG_PRINT("Captured image Format:", fb->format);
       DEBUG_PRINT("Captured image Lenght:", fb->len);
 
-      return fb;
-    }
+      auto psImageBuf =  (uint8_t*)ps_malloc(fb->width * fb->height * 2);
 
-    void setCameraSettings() {
-      sensor_t * s = esp_camera_sensor_get();
-      s->set_brightness(s, 0);     // -2 to 2
-      s->set_contrast(s, 0);       // -2 to 2
-      s->set_saturation(s, 0);     // -2 to 2
-      s->set_special_effect(s, 0); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
-      s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
-      s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable
-      s->set_wb_mode(s, 0);        // 0 to 4 - if awb_gain enabled (0 - Auto, 1 - Sunny, 2 - Cloudy, 3 - Office, 4 - Home)
-      s->set_exposure_ctrl(s, 1);  // 0 = disable , 1 = enable
-      s->set_aec2(s, 0);           // 0 = disable , 1 = enable
-      s->set_ae_level(s, 0);       // -2 to 2
-      s->set_aec_value(s, 300);    // 0 to 1200
-      s->set_gain_ctrl(s, 1);      // 0 = disable , 1 = enable
-      s->set_agc_gain(s, 0);       // 0 to 30
-      s->set_gainceiling(s, (gainceiling_t)0);  // 0 to 6
-      s->set_bpc(s, 0);            // 0 = disable , 1 = enable
-      s->set_wpc(s, 1);            // 0 = disable , 1 = enable
-      s->set_raw_gma(s, 1);        // 0 = disable , 1 = enable
-      s->set_lenc(s, 1);           // 0 = disable , 1 = enable
-      s->set_hmirror(s, 0);        // 0 = disable , 1 = enable
-      s->set_vflip(s, 0);          // 0 = disable , 1 = enable
-      s->set_dcw(s, 1);            // 0 = disable , 1 = enable
-      s->set_colorbar(s, 0);       // 0 = disable , 1 = enable
+      //convert JPG to RGB565
+      jpg2rgb565(fb->buf, fb->len, psImageBuf, JPG_SCALE_NONE);
+
+      //convert back to JPG with RST markers
+      res = JpgRst::rgb5652jpg(psImageBuf, fb->width * fb->height * 2, fb->width, fb->height, 10);
+      //fmt2jpg(psImageBuf, fb->width * fb->height * 2, fb->width, fb->height,  PIXFORMAT_RGB565, 30, &(res.data), &(res.len));
+
+
+      esp_camera_fb_return(fb);
+
+      return res;
     }
 
     uint16_t* cameraCaptureRGB565() {
@@ -161,6 +161,8 @@ namespace instruments {
       }
 
       instruments::setCameraSettings();
+
+      delay(500);
 
       camera_fb_t *fb = esp_camera_fb_get();
       if (!fb) {

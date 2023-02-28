@@ -4,6 +4,7 @@
  * @author Lukas Plevac <lukas@plevac.eu>
  */
 #include "ssdo.h"
+#include "debug.h"
 
 
 SSDO::SSDO(uint32_t senderId, uint32_t objectId, uint8_t type) {
@@ -13,30 +14,35 @@ SSDO::SSDO(uint32_t senderId, uint32_t objectId, uint8_t type) {
 }
 
 uint8_t SSDO::setPacket(uint8_t* data, uint32_t packetId, uint8_t* packet, uint32_t dataSize) {
-	ssdoHeader_t* packetHeader = (ssdoHeader_t*) packet;
 	auto          packetData   = packet + sizeof(ssdoHeader_t);
 
-	uint32_t dataPos = i * SSDO_PACKET_DATA_SIZE;
+	uint32_t dataPos = packetId * SSDO_PACKET_DATA_SIZE;
+
+	ssdoHeader_t newHeader;
 
 	//Packet information
-	packetHeader->src     = this->senderId;
-	packetHeader->pktId   = packetId;
-	packetHeader->pktSize = (dataPos + SSDO_PACKET_DATA_SIZE) =< dataSize ? 
+	newHeader.src     = this->senderId;
+	newHeader.pktId   = packetId;
+	newHeader.pktSize = (dataPos + SSDO_PACKET_DATA_SIZE) <= dataSize ? 
 								SSDO_PACKET_DATA_SIZE : (dataSize - dataPos); 
 
+	DEBUG_PRINT(newHeader.pktSize);
+
 	//Object information
-	packetHeader->objId   = this->objectId;
-	packetHeader->objSize = dataSize;
-	packetHeader->objType = this->obejctType;
+	newHeader.objId   = this->objectId;
+	newHeader.objSize = dataSize;
+	newHeader.objType = this->objectType;
 
 	//check sum
-	packetHeader->crc     = this->calcCRC(&data[dataPos], packetHeader->pktSize);
+	newHeader.crc     = this->calcCRC(&data[dataPos], newHeader.pktSize);
 
-	for (uint8_t i = 0; i < packetHeader->pktSize; i++) {
+	memcpy(packet, &newHeader, sizeof(ssdoHeader_t));
+
+	for (uint8_t i = 0; i < newHeader.pktSize; i++) {
 		packetData[i] = data[dataPos + i];
 	}
 
-	return packetHeader->pktSize + sizeof(ssdoHeader_t);
+	return newHeader.pktSize + sizeof(ssdoHeader_t);
 }
 
 bool SSDO::decodePacket(uint8_t* data, uint8_t* packet, ssdoHeader_t* header) {
@@ -53,12 +59,12 @@ bool SSDO::decodePacket(uint8_t* data, uint8_t* packet, ssdoHeader_t* header) {
 	return true;
 }
 
-uint16_t SSDO::calcCRC(uint8_t data, uint32_t len) {
+uint16_t SSDO::calcCRC(uint8_t* data, uint32_t len) {
   uint16_t CRC         = 0xffff; // Seed
   uint16_t xPolynomial = 0x1021;
    
   for (uint32_t i = 0; i < len; i++) {
-    CRC ^= message[i] << 8;
+    CRC ^= data[i] << 8;
     for (unsigned j = 0; j < 8; j++) {
       if (CRC & 0x8000) CRC = (CRC << 1) ^ 0x1021;
       else              CRC <<= 1;
