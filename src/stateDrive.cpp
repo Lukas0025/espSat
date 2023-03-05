@@ -5,6 +5,7 @@
  */
 #include "stateDrive.h"
 #include "persistMem.h"
+#include "camera.h"
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
@@ -105,13 +106,13 @@ namespace StateDrive {
 	}
 
 	state_t sstvState() {
-		uint16_t* image = instruments::cameraCaptureRGB565();
+		auto image = camera::captureRGB565(&config::camera::RGB565);
 
 		radioControl->setupFSK(config::radio::fsk);
 		radioControl->setupSSTV(config::radio::sstv, sstv);
-		radioControl->sendSSTV(image);
+		radioControl->sendSSTV((uint16_t*)image.buf);
 
-		free(image);
+		image::release(image);
 
 		NEXT_SOFT_STATE(sleepState);
 	}
@@ -119,18 +120,19 @@ namespace StateDrive {
 	state_t loraFastSSDOState() {
 		SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraHDImg, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
-		auto fb = instruments::cameraCaptureJpgHD();
+		auto image = camera::captureJpg(&config::camera::jpgHD, JPEG_Q_LOW);
 
-		if (fb.data) {
+		if (image.buf) {
 			radioControl->setupLora(config::radio::loraSSDOFast);
 
 			uint8_t packet[SSDO_PACKET_SIZE];
-			for (unsigned i = 0; i < ssdoProtocol.packetsCount(fb.len); i++) { 
-				unsigned packetLen = ssdoProtocol.setPacket(fb.data, i, packet, fb.len);
+			for (unsigned retry = 0; retry < 3; retry++)
+			for (unsigned i = 0; i < ssdoProtocol.packetsCount(image.len); i++) { 
+				unsigned packetLen = ssdoProtocol.setPacket(image.buf, i, packet, image.len);
 				radioControl->sendLora(packet, packetLen);
 			}
 
-			free(fb.data);
+			image::release(image);
 			
 		}
 
@@ -140,18 +142,20 @@ namespace StateDrive {
 	state_t loraSlowSSDOState() {
 		SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraImg, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
-		auto fb = instruments::cameraCaptureJpgQVGA();
+		auto image = camera::captureJpg(&config::camera::JpgQVGA, JPEG_Q_LOW);
 
-		if (fb) {
-			radioControl->setupLora(config::radio::loraTelemetry);
+		if (image.buf) {
+			radioControl->setupLora(config::radio::loraSSDOFast);
 
 			uint8_t packet[SSDO_PACKET_SIZE];
-			for (unsigned i = 0; i < fb->len; i++) { 
-				unsigned packetLen = ssdoProtocol.setPacket(fb->buf, i, packet, fb->len);
-				radioControl->sendLora(packet, SSDO_PACKET_SIZE);
+			for (unsigned retry = 0; retry < 3; retry++)
+			for (unsigned i = 0; i < ssdoProtocol.packetsCount(image.len); i++) { 
+				unsigned packetLen = ssdoProtocol.setPacket(image.buf, i, packet, image.len);
+				radioControl->sendLora(packet, packetLen);
 			}
 
-			esp_camera_fb_return(fb);
+			image::release(image);
+			
 		}
 
 		NEXT_SOFT_STATE(sleepState);

@@ -9,7 +9,6 @@
 #include "telemetry.h"
 #include "config.h"
 #include <esp_camera.h>
-#include "jpgRst.h"
 
 namespace instruments {
 
@@ -86,26 +85,6 @@ namespace instruments {
      * @return temperature in C 
      */
     float getTemperature();
-    
-    /**
-     * Get image from camera in 320x240 RGB565 format
-     * @post must free pointer
-     * @return pointer to image
-     */
-    uint16_t* cameraCaptureRGB565();
-
-    /**
-     * Get JPG image from camera in QVGA resolution
-     * @post must free frame buffer
-     * @return pointer to framebuffer
-     */
-    camera_fb_t* cameraCaptureJpgQVGA();
-
-    /* Get JPG image from camera in UXGA resolution
-     * @post must free frame buffer
-     * @return pointer to framebuffer
-     */
-    JpgRst::buffer_t cameraCaptureJpgHD();
 
     /**
      * get UPTIME of satellite in seconds for telemetry in HH::MM::SS
