@@ -13,6 +13,11 @@
 SPIClass radioSPI(HSPI);
 BluetoothSerial BTSerial;
 
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+
 RADIOHW radio = new Module(RADIO_NSS_PIN, RADIOLIB_NC, RADIO_RESET_PIN, RADIOLIB_NC, radioSPI);
 
 

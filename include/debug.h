@@ -16,8 +16,8 @@
 #if DEBUG_STREAM == BTSerial 
   extern BluetoothSerial BTSerial;
 
-  #define DEBUG_STREAM_PRINT(X)   DEBUG_STREAM.write((const uint8_t*)String(X).c_str(),          strlen(String(X).c_str()) + 1)
-  #define DEBUG_STREAM_PRINTLN(X) DEBUG_STREAM.write((const uint8_t*)(String(X) + "\n").c_str(), strlen(String(X).c_str()) + 2)
+  #define DEBUG_STREAM_PRINT(X)   DEBUG_STREAM.print(X)
+  #define DEBUG_STREAM_PRINTLN(X) DEBUG_STREAM.println(X)
 #elif DEBUG_STREAM == Serial 
   #define DEBUG_STREAM_PRINT(X)   DEBUG_STREAM.print(X)
   #define DEBUG_STREAM_PRINTLN(X) DEBUG_STREAM.println(X)
@@ -69,7 +69,8 @@
      * Open serial line for debug
      */
     #define DEBUG_BEGIN() { \
-      BTSerial.begin("ESPSATDebug");   \
+      BTSerial.begin("ESPDebug");   \
+      BTSerial.println("hello ESP debug ready"); \
       delay(10000);         \
     }
   #elif DEBUG_STREAM == Serial 
