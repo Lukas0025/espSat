@@ -5,9 +5,23 @@
  */
 #pragma once
 #include <Arduino.h>
+#include "BluetoothSerial.h"
 
 //comment out for no debug
 #define DEBUG
+
+//#define DEBUG_STREAM Serial
+#define DEBUG_STREAM BTSerial
+
+#if DEBUG_STREAM == BTSerial 
+  extern BluetoothSerial BTSerial;
+
+  #define DEBUG_STREAM_PRINT(X)   DEBUG_STREAM.write((const uint8_t*)String(X).c_str(),          strlen(String(X).c_str()) + 1)
+  #define DEBUG_STREAM_PRINTLN(X) DEBUG_STREAM.write((const uint8_t*)(String(X) + "\n").c_str(), strlen(String(X).c_str()) + 2)
+#elif DEBUG_STREAM == Serial 
+  #define DEBUG_STREAM_PRINT(X)   DEBUG_STREAM.print(X)
+  #define DEBUG_STREAM_PRINTLN(X) DEBUG_STREAM.println(X)
+#endif
 
 //for set DEBUG LEVEL 0 for show all 1 for WARNING and ERROR and 2 only for ERROR
 #define DEBUG_LEVEL 0 
@@ -15,11 +29,11 @@
 /**
  * Macros to print string with N params UPTO 5
  */
-#define ARGS_PRINT_1(X)      Serial.print(X) 
-#define ARGS_PRINT_2(X, ...) Serial.print(X); ARGS_PRINT_1(__VA_ARGS__)
-#define ARGS_PRINT_3(X, ...) Serial.print(X); ARGS_PRINT_2(__VA_ARGS__)
-#define ARGS_PRINT_4(X, ...) Serial.print(X); ARGS_PRINT_3(__VA_ARGS__)
-#define ARGS_PRINT_5(X, ...) Serial.print(X); ARGS_PRINT_4(__VA_ARGS__)
+#define ARGS_PRINT_1(X)      DEBUG_STREAM_PRINT(X) 
+#define ARGS_PRINT_2(X, ...) DEBUG_STREAM_PRINT(X); ARGS_PRINT_1(__VA_ARGS__)
+#define ARGS_PRINT_3(X, ...) DEBUG_STREAM_PRINT(X); ARGS_PRINT_2(__VA_ARGS__)
+#define ARGS_PRINT_4(X, ...) DEBUG_STREAM_PRINT(X); ARGS_PRINT_3(__VA_ARGS__)
+#define ARGS_PRINT_5(X, ...) DEBUG_STREAM_PRINT(X); ARGS_PRINT_4(__VA_ARGS__)
 //... repeat as needed
 
 /**
@@ -50,33 +64,43 @@
 #ifdef DEBUG
   const char HexTable[] = "0123456789ABCDEF";
 
-  /**
-   * Open serial line for debug
-   */
-  #define DEBUG_BEGIN() { \
-    Serial.begin(9600);   \
-    delay(10000);         \
-  }
+  #if DEBUG_STREAM == BTSerial 
+    /**
+     * Open serial line for debug
+     */
+    #define DEBUG_BEGIN() { \
+      BTSerial.begin("ESPSATDebug");   \
+      delay(10000);         \
+    }
+  #elif DEBUG_STREAM == Serial 
+    /**
+     * Open serial line for debug
+     */
+    #define DEBUG_BEGIN() { \
+      Serial.begin(9600);   \
+      delay(10000);         \
+    }
+  #endif
 
   #define DEBUG_PRINT_HEX(DATA, LEN) {                 \
-    Serial.println("");                                \
+    DEBUG_STREAM_PRINTLN("");                                \
     for (unsigned i = 0; i < LEN; i++) {               \
-      Serial.print(HexTable[(DATA[i] >> 4) & 0b1111]); \
-      Serial.print(HexTable[DATA[i]        & 0b1111]); \
+      DEBUG_STREAM_PRINT(HexTable[(DATA[i] >> 4) & 0b1111]); \
+      DEBUG_STREAM_PRINT(HexTable[DATA[i]        & 0b1111]); \
     }                                                  \
-    Serial.println("");                                \
+    DEBUG_STREAM_PRINTLN("");                                \
   }
   
   /**
    * Print location in program to serial line
    */
   #define DEBUG_PRINT_CODE_LOC() { \
-    Serial.print(__FILE__);        \
-    Serial.print(":");             \
-    Serial.print(__LINE__);        \
-    Serial.print(":");             \
-    Serial.print(__func__);        \
-    Serial.print("(): ");          \
+    DEBUG_STREAM_PRINT(__FILE__);        \
+    DEBUG_STREAM_PRINT(":");             \
+    DEBUG_STREAM_PRINT(__LINE__);        \
+    DEBUG_STREAM_PRINT(":");             \
+    DEBUG_STREAM_PRINT(__func__);        \
+    DEBUG_STREAM_PRINT("(): ");          \
   }
 
   /**
@@ -86,10 +110,10 @@
    */
   #define DEBUG_PRINT(...) {       \
     if (DEBUG_LEVEL <= 0) {        \
-      Serial.print("[DEBUG]   ");  \
+      DEBUG_STREAM_PRINT("[DEBUG]   ");  \
       DEBUG_PRINT_CODE_LOC();      \
       FOR_EACH_PRINT(__VA_ARGS__); \
-      Serial.println("");          \
+      DEBUG_STREAM_PRINTLN("");          \
     }                              \
   }
 
@@ -99,10 +123,10 @@
    * @param ... multiple information to print UPTO by FOR_EACH_PRINT
    */
   #define WARNING_PRINT(...) {   \
-    Serial.print("[WARNING] ");  \
+    DEBUG_STREAM_PRINT("[WARNING] ");  \
     DEBUG_PRINT_CODE_LOC();      \
     FOR_EACH_PRINT(__VA_ARGS__); \
-    Serial.println("");          \
+    DEBUG_STREAM_PRINTLN("");          \
   }
 
   /**
@@ -111,17 +135,17 @@
    * @param ... multiple information to print UPTO by FOR_EACH_PRINT
    */
   #define ERROR_PRINT(...) {     \
-    Serial.print("[ERROR]   ");  \
+    DEBUG_STREAM_PRINT("[ERROR]   ");  \
     DEBUG_PRINT_CODE_LOC();      \
     FOR_EACH_PRINT(__VA_ARGS__); \
-    Serial.println("");          \
+    DEBUG_STREAM_PRINTLN("");          \
   }
 
 #else // if debug is desibled do nothing
   #define DEBUG_BEGIN()          {}
   #define DEBUG_PRINT_CODE_LOC() {}
-  #define DEBUG_PRINT(X)         {}
-  #define WARNING_PRINT(X)       {}
-  #define ERROR_PRINT(X)         {}
+  #define DEBUG_PRINT(...)       {}
+  #define WARNING_PRINT(...)     {}
+  #define ERROR_PRINT(...)       {}
   #define DEBUG_PRINT_HEX(DATA, LEN) {}
 #endif
