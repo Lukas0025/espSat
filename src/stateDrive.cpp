@@ -78,7 +78,7 @@ namespace StateDrive {
 		//increment transmit counter to prevent deadLock loops when same state fail
 		instruments::incGetTransmitCounter();
 
-		NEXT_SOFT_STATE(loraFastSSDOState);
+		NEXT_SOFT_STATE(rttyState);
 
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);

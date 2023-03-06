@@ -236,7 +236,6 @@
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -470,7 +469,6 @@
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "/home/lukasplevac/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },

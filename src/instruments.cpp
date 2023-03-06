@@ -7,11 +7,28 @@
 #include "instruments.h"
 #include "persistMem.h"
 #include "testData.h"
+#include <Wire.h>
+#include <BMP180.h>
 
 namespace instruments {
 
+    const float sea_press = 1013.25;
+    BMP180 bmpInstrument(BMP180_ULTRAHIGHRES);
+
     void setup() {
       PersistMem::init();
+
+      Wire.begin(INNER_I2C_SDA, INNER_I2C_SCL);
+
+      for (unsigned retry = 0; retry < 3; retry++) {
+        if (bmpInstrument.begin()) {
+          DEBUG_PRINT("BMP inited");
+          break;
+        }
+
+        ERROR_PRINT("fail to init BMP sensor");
+        delay(5000);
+      }
     }
 
     /*
@@ -27,11 +44,11 @@ namespace instruments {
     }
 
     float getAlt() {
-      return 1000;
+      return ((pow((sea_press / bmpInstrument.getPressure()), 1/5.257) - 1.0) * (bmpInstrument.getTemperature() + 273.15)) / 0.0065;
     }
 
     float getPressure() {
-      return 1100;
+      return bmpInstrument.getPressure();
     }
 
     float getVoltage() {
@@ -39,7 +56,7 @@ namespace instruments {
     }
 
     float getTemperature() {
-      return 10;
+      return bmpInstrument.getTemperature();
     }
 
     /*

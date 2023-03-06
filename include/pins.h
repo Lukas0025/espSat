@@ -10,9 +10,14 @@
 #define INNER_SPI_MOSI              2
 #define INNER_SPI_SCLK              14
 
+#define INNER_I2C_SDA               13
+#define INNER_I2C_SCL               4
+
+#define INNER_ADC                   12
+
 //Radio pins
-#define RADIO_NSS_PIN               13
-#define RADIO_RESET_PIN             4
+#define RADIO_NSS_PIN               3
+#define RADIO_RESET_PIN             1
 
 //Camera pins
 #define CAM_PIN_PWDN                32
