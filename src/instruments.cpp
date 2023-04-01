@@ -8,17 +8,39 @@
 #include "persistMem.h"
 #include "testData.h"
 #include <Wire.h>
-#include <BMP180.h>
+#include <ErriezBMX280.h>
 
 namespace instruments {
 
-    const float sea_press = 1013.25;
-    BMP180 bmpInstrument(BMP180_ULTRAHIGHRES);
+    ErriezBMX280 bmpInstrument = ErriezBMX280(BMX280_ADDR);
+
+    void scanI2CBus() {    
+      DEBUG_PRINT("Performing I2C BUS Scan");
+
+      for(byte address = 1; address < 127; address++ ) {
+        Wire.beginTransmission(address);
+        byte error = Wire.endTransmission();
+    
+        if (error == 0) DEBUG_PRINT("I2C device found at address ",  address);
+        if (error == 4) DEBUG_PRINT("I2C Unknown error at address ", address);
+      }
+
+      DEBUG_PRINT("I2C BUS Scan done");
+    }
 
     void setup() {
       PersistMem::init();
 
+      // Init I2C Bus
       Wire.begin(INNER_I2C_SDA, INNER_I2C_SCL);
+      Wire.setClock(INNER_I2C_CLOCK);
+
+      #ifdef DEBUG
+        scanI2CBus();
+      #endif
+
+      // reconfigure pin for analog input
+      analogRead(INNER_ADC);
 
       for (unsigned retry = 0; retry < 3; retry++) {
         if (bmpInstrument.begin()) {
@@ -44,19 +66,27 @@ namespace instruments {
     }
 
     float getAlt() {
-      return ((pow((sea_press / bmpInstrument.getPressure()), 1/5.257) - 1.0) * (bmpInstrument.getTemperature() + 273.15)) / 0.0065;
+      float alt = bmpInstrument.readAltitude(SEA_LEVEL_PRESSURE_HPA);
+      DEBUG_PRINT("Readed alt is: ", alt, "m");
+      return alt;
     }
 
     float getPressure() {
-      return bmpInstrument.getPressure();
+      float press = bmpInstrument.readPressure() / 100.0F;
+      DEBUG_PRINT("Readed pressure is: ", press, "hPa");
+      return bmpInstrument.readPressure();
     }
 
     float getVoltage() {
-      return 3;
+      float sysVoltage = (analogRead(INNER_ADC) * ADC_V_MAX * ADC_R_RATIO) / ADC_BITS;
+      DEBUG_PRINT("Readed system voltage is: ", sysVoltage, "V");
+      return sysVoltage;
     }
 
-    float getTemperature() {
-      return bmpInstrument.getTemperature();
+    float getTemperature() {  
+      float temp = bmpInstrument.readTemperature();
+      DEBUG_PRINT("Readed temperature is: ", temp, "C");
+      return temp;
     }
 
     /*

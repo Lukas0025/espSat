@@ -12,6 +12,7 @@
 
 #define INNER_I2C_SDA               13
 #define INNER_I2C_SCL               4
+#define INNER_I2C_CLOCK             50000 //In Hz
 
 #define INNER_ADC                   12
 

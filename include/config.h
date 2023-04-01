@@ -17,6 +17,21 @@
 #define TELEMETRY_TYPE_UKHAS   0 //UKHAS Telemetry format like $$$$craftName,var,var,...,var*<checksum>\n
 #define TELEMETRY_TYPE_RAWVARS 1 //Simple format          like $$$$ craftName :: varname:Var;varname:var ...
 
+// I have 10k and 10k -> RATIO is 1/2 -> 2 is inverse
+#define ADC_R_RATIO 2
+
+// Max valtage what ADC can read
+#define ADC_V_MAX   3.3
+
+// Max number what ADC can return 12b here
+#define ADC_BITS    4095
+
+//Address of BMX280 device
+#define BMX280_ADDR 118
+
+// For calculate altudite
+#define SEA_LEVEL_PRESSURE_HPA 1026.25
+
 //#define ON_BOOT_RESET_PERSIST_MEM
 //#define RESET_PERSIST_MEM_ONLY
 
