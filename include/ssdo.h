@@ -6,13 +6,15 @@
 
 #pragma once
 #include <Arduino.h>
+#include "radio.h"
 
 #define SSDO_PACKET_DATA_SIZE (SSDO_PACKET_SIZE - sizeof(ssdoHeader_t))
 #define SSDO_PACKET_SIZE 255
 #define SSDO_VERSION 1
 
-#define SSDO_TYPE_TEXT 0
-#define SSDO_TYPE_JPG  1
+#define SSDO_TYPE_CHANGE 0
+#define SSDO_TYPE_TEXT   1
+#define SSDO_TYPE_JPG    2
 
 typedef struct {
 	char     protName[4] = {'S', 'S', 'D', 'O'};
@@ -25,6 +27,14 @@ typedef struct {
 	uint8_t  objType     = 0;
 	uint16_t crc         = 0;
 } __attribute__((packed)) ssdoHeader_t;
+
+typedef struct {
+  float Frequency;
+  float Bandwidth;
+  uint8_t SpreadFactor;
+  uint8_t CodeRate;
+  uint8_t SyncWord;
+} __attribute__((packed)) ssdoChange_t;
 
 
 class SSDO {
@@ -61,6 +71,8 @@ class SSDO {
 		 * @return bool true if success decode
 		 */
 		bool decodePacket(uint8_t* data, uint8_t* packet, ssdoHeader_t* header);
+
+		bool change(RadioControl* radio, LoraSettings_t newSettings, uint8_t resend = 1);
 
 	private:
 		/**

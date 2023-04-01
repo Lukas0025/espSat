@@ -18,6 +18,14 @@ namespace StateDrive {
 	RTTYClient *rtty;
 	SSTVClient *sstv;
 
+	void setupSSDOLora(SSDO* ssdoProtocol, LoraSettings_t settings) {
+		radioControl->setupLora(config::radio::loraTelemetry); // setup LORA on base freqvency
+
+		if (memcmp(&settings, &(config::radio::loraTelemetry), sizeof(LoraSettings_t)) != 0) {
+			ssdoProtocol->change(radioControl, settings); // send chage infomration on LORA base freqvency and chage
+		}
+	}
+
 	void run() {
 		currentState();		
 	}
@@ -78,7 +86,8 @@ namespace StateDrive {
 		//increment transmit counter to prevent deadLock loops when same state fail
 		instruments::incGetTransmitCounter();
 
-		NEXT_SOFT_STATE(rttyState);
+		//NEXT_SOFT_STATE(loraFastSSDOState);
+		NEXT_SOFT_STATE(loraTelemetryState);
 
 		//LoraTelemetry every 10min and other every 30min
 		if (transmitCounter % 6 == 0) NEXT_SOFT_STATE(loraTelemetryState);
@@ -120,16 +129,22 @@ namespace StateDrive {
 	state_t loraFastSSDOState() {
 		SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraHDImg, instruments::incGetLoraCounter(), SSDO_TYPE_JPG);
 
-		auto image = camera::captureJpg(&config::camera::jpgHD, JPEG_Q_LOW);
+		auto image = camera::captureJpg(&config::camera::jpgHD, JPEG_Q_MED);
 
 		if (image.buf) {
-			radioControl->setupLora(config::radio::loraSSDOFast);
+			setupSSDOLora(&ssdoProtocol, config::radio::loraJPGFast);
 
 			uint8_t packet[SSDO_PACKET_SIZE];
-			for (unsigned retry = 0; retry < 3; retry++)
 			for (unsigned i = 0; i < ssdoProtocol.packetsCount(image.len); i++) { 
 				unsigned packetLen = ssdoProtocol.setPacket(image.buf, i, packet, image.len);
 				radioControl->sendLora(packet, packetLen);
+				
+				if (i % 100 == 50) { //retransmit header
+					for (unsigned j = 0; j < ssdoProtocol.packetsCount(image.headerLen); j++) { 
+						unsigned packetLen = ssdoProtocol.setPacket(image.buf, j, packet, image.len);
+						radioControl->sendLora(packet, packetLen);
+					}
+				}
 			}
 
 			image::release(image);
@@ -145,20 +160,28 @@ namespace StateDrive {
 		auto image = camera::captureJpg(&config::camera::JpgQVGA, JPEG_Q_LOW);
 
 		if (image.buf) {
-			radioControl->setupLora(config::radio::loraSSDOFast);
+			setupSSDOLora(&ssdoProtocol, config::radio::loraJPGSlow);
 
 			uint8_t packet[SSDO_PACKET_SIZE];
-			for (unsigned retry = 0; retry < 3; retry++)
 			for (unsigned i = 0; i < ssdoProtocol.packetsCount(image.len); i++) { 
 				unsigned packetLen = ssdoProtocol.setPacket(image.buf, i, packet, image.len);
 				radioControl->sendLora(packet, packetLen);
+
+				if (i % 15 == 10) { //retransmit header
+					for (unsigned j = 0; j < ssdoProtocol.packetsCount(image.headerLen); j++) { 
+						unsigned packetLen = ssdoProtocol.setPacket(image.buf, j, packet, image.len);
+						radioControl->sendLora(packet, packetLen);
+					}
+				}
 			}
 
 			image::release(image);
 			
 		}
 
-		NEXT_SOFT_STATE(sleepState);
+		//NEXT_SOFT_STATE(sleepState);
+		delay(60000);
+		NEXT_SOFT_STATE(loraFastSSDOState);
 	}
 
 	state_t loraTelemetryState() {
@@ -169,7 +192,7 @@ namespace StateDrive {
 
     	SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraTelemetry, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
     
-		radioControl->setupLora(config::radio::loraTelemetry);
+		setupSSDOLora(&ssdoProtocol, config::radio::loraTelemetry);
 		
 		uint8_t packet[SSDO_PACKET_SIZE];
     	for (unsigned i = 0; i < ssdoProtocol.packetsCount(state.length()); i++) { 

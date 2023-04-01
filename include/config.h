@@ -94,9 +94,9 @@ namespace config {
       .ledc_channel = LEDC_CHANNEL_0,
 
       .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-      .frame_size = FRAMESIZE_QQVGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
+      .frame_size = FRAMESIZE_QVGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
 
-      .jpeg_quality = 63, //0-63, for OV series camera sensors, lower number means higher quality
+      .jpeg_quality = 6, //0-63, for OV series camera sensors, lower number means higher quality
       .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
       .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
@@ -128,7 +128,7 @@ namespace config {
       .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
       .frame_size = FRAMESIZE_HD,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
 
-      .jpeg_quality = 30, //0-63, for OV series camera sensors, lower number means higher quality
+      .jpeg_quality = 6, //0-63, for OV series camera sensors, lower number means higher quality
       .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
       .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
     };
@@ -180,11 +180,23 @@ namespace config {
       .Gain           = 0
     };
 
-    const LoraSettings_t loraSSDOFast = {
+    const LoraSettings_t loraJPGFast = {
       .Frequency      = 434.126,
       .Bandwidth      = 250,
       .SpreadFactor   = 7,
       .CodeRate       = 6,
+      .SyncWord       = 0x12,
+      .Power          = 17,
+      .CurrentLimit   = 100,
+      .PreambleLength = 8,
+      .Gain           = 0
+    };
+
+    const LoraSettings_t loraJPGSlow = {
+      .Frequency      = 434.126,
+      .Bandwidth      = 125,
+      .SpreadFactor   = 9,
+      .CodeRate       = 8,
       .SyncWord       = 0x12,
       .Power          = 17,
       .CurrentLimit   = 100,

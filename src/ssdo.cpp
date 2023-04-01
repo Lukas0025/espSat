@@ -5,6 +5,7 @@
  */
 #include "ssdo.h"
 #include "debug.h"
+#include "radio.h"
 
 
 SSDO::SSDO(uint32_t senderId, uint32_t objectId, uint8_t type) {
@@ -55,6 +56,35 @@ bool SSDO::decodePacket(uint8_t* data, uint8_t* packet, ssdoHeader_t* header) {
 
 	memcpy(header, headerPtr,                     sizeof(ssdoHeader_t));
 	memcpy(data,   packet + sizeof(ssdoHeader_t), headerPtr->pktSize);
+
+	return true;
+}
+
+bool SSDO::change(RadioControl* radio, LoraSettings_t newSettings, uint8_t resend) {
+	ssdoChange_t newSSDOSettings;
+
+	newSSDOSettings.Frequency    = newSettings.Frequency;
+	newSSDOSettings.Bandwidth    = newSettings.Bandwidth;
+	newSSDOSettings.SpreadFactor = newSettings.SpreadFactor;
+	newSSDOSettings.CodeRate     = newSettings.CodeRate;
+	newSSDOSettings.SyncWord     = newSettings.SyncWord;
+
+	//chage OBJ type
+	uint8_t oldObjType = this->objectType;
+	this->objectType   = SSDO_TYPE_CHANGE;
+
+	//create packets and send new config
+	uint8_t packet[SSDO_PACKET_SIZE];
+	
+	for (unsigned retry = 0; retry < resend; retry++)
+	for (unsigned i = 0; i < this->packetsCount(sizeof(ssdoChange_t)); i++) { 
+		unsigned packetLen = this->setPacket((uint8_t*) &newSSDOSettings, i, packet, sizeof(ssdoChange_t));
+		radio->sendLora(packet, packetLen);
+	}
+
+	radio->setupLora(newSettings);
+
+	this->objectType = oldObjType;
 
 	return true;
 }

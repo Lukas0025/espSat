@@ -80,6 +80,13 @@ namespace image {
         out.height = src.height;
         out.width  = src.width;
 
+        for (out.headerLen = 0; out.headerLen < out.len - 1; out.headerLen++) {
+            if (out.buf[out.headerLen] == 0xFF && out.buf[out.headerLen + 1] == 0xDA) {
+                out.headerLen++;
+                break;
+            }
+        }
+
         return out;
     }
 

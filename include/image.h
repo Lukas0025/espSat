@@ -5,10 +5,11 @@
 
 namespace image {
     typedef struct {
-        uint8_t *buf    = NULL;
-        size_t   len    = 0;
-        unsigned width  = 0;
-        unsigned height = 0;
+        uint8_t  *buf    = NULL;
+        size_t    len    = 0;
+        size_t headerLen = 0;
+        unsigned  width  = 0;
+        unsigned  height = 0;
         pixformat_t fromat;
     } image_t;
     
