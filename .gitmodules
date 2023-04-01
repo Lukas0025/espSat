@@ -4,6 +4,6 @@
 [submodule "lib/JPEGENC"]
 	path = lib/JPEGENC
 	url = https://github.com/bitbank2/JPEGENC
-[submodule "lib/BMP180"]
-	path = lib/BMP180
-	url = https://github.com/enjoyneering/BMP180
+[submodule "lib/ErriezBMX280"]
+	path = lib/ErriezBMX280
+	url = https://github.com/Erriez/ErriezBMX280
