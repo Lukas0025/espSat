@@ -217,6 +217,6 @@ namespace config {
   }
 
   namespace sleep {
-    const uint16_t timeToSleep = 5 * 60; //in S
+    const uint16_t timeToSleep = 1 * 60; //in S
   }
 }

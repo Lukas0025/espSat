@@ -48,6 +48,8 @@ namespace camera {
 
         esp_camera_fb_return(fb);
 
+        esp_camera_deinit();
+
         return rgb565;
     }
 
