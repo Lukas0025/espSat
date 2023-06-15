@@ -98,7 +98,7 @@ namespace instruments {
     }
 
     uint32_t getLoraCounter() {
-      return PersistMem::getTransmitCounter();
+      return PersistMem::getLoraCounter();
     }
 
     uint16_t getBootCounter() {
@@ -121,7 +121,7 @@ namespace instruments {
 
     uint16_t incGetBootCounter() {
       auto bc = PersistMem::getBootCounter(); 
-      PersistMem::setLoraCounter(++bc);
+      PersistMem::setBootCounter(++bc);
 
       return bc;
     }
