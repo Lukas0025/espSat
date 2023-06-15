@@ -185,7 +185,7 @@ namespace StateDrive {
 		if (config::telemetry::type == TELEMETRY_TYPE_RAWVARS) state = telemetry->getState();
 		if (config::telemetry::type == TELEMETRY_TYPE_UKHAS)   state = telemetry->getUKHAS();
 
-    	SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraTelemetry, instruments::incGetLoraCounter(), SSDO_TYPE_TEXT);
+    	SSDO ssdoProtocol = SSDO(config::radio::craftIdLoraTelemetry, instruments::incGetLoraCounter(), SSDO_TYPE_ASCII_UKHAS);
     
 		setupSSDOLora(&ssdoProtocol, config::radio::loraTelemetry);
 		

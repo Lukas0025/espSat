@@ -12,9 +12,12 @@
 #define SSDO_PACKET_SIZE 255
 #define SSDO_VERSION 1
 
-#define SSDO_TYPE_CHANGE 0
-#define SSDO_TYPE_TEXT   1
-#define SSDO_TYPE_JPG    2
+#define SSDO_TYPE_CHANGE       0
+#define SSDO_TYPE_RAW          1
+#define SSDO_TYPE_ASCII        2
+#define SSDO_TYPE_JPG          3
+#define SSDO_TYPE_ASCII_UKHAS  4
+#define SSDO_TYPE_ASCII_JSON   5
 
 typedef struct {
 	char     protName[4] = {'S', 'S', 'D', 'O'};
